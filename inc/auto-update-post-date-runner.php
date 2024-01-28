@@ -76,15 +76,11 @@ function aupd_post_types_check_callback() {
 }
 
 function aupd_manual_date_callback() {
-    $value = get_option('aupd_plugin_mode_radio');
+    $value = get_option('aupd_manual_datetime');
     ?>
-    <p>Set the date to be updated on all selected posts.</p>
+    <p>Set the date and time to be updated on all selected posts. Note that selecting a future date will make your post status to be changed to scheduled.</p>
     <br>
-    <input id="aupd_plugin_mode_manual_radio" type="radio" name="aupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> />
-    <label for="aupd_plugin_mode_manual_radio">Manual</label>
-    <br>
-    <input id="aupd_plugin_mode_auto_radio" type="radio" name="aupd_plugin_mode_radio" value="auto_mode" <?php checked('auto_mode', $value); ?> />
-    <label for="aupd_plugin_mode_auto_radio">Auto</label>
+    <input id="aupd_manual_date_time" type="text" name="aupd_manual_datetime" />
     <?php
 }
 
@@ -92,8 +88,10 @@ function aupd_manual_date_callback() {
 function run_plugin_action() {
     // Verify nonce for security
     if (isset($_POST['aupd_plugin_nonce_field']) && wp_verify_nonce($_POST['aupd_plugin_nonce_field'], 'aupd_plugin_nonce')) {
+
         // Retrieve form data and perform actions
         $radio_button_value = sanitize_text_field($_POST['aupd_plugin_mode_radio']);
+        $date_time_value = sanitize_text_field($_POST['aupd_manual_datetime']);
 
         $defPostTypes = [
             'post',
@@ -116,6 +114,8 @@ function run_plugin_action() {
                 update_option('aupd_cpt_' . $cpt, $cpt);
             }
         }
+
+        update_option('aupd_manual_datetime', $date_time_value);
 
     }
 }
