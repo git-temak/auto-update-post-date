@@ -1,3 +1,15 @@
-#aupd-container #aupd_manual_date_time, #aupd-container .form-table tr:nth-child(3) {
+#aupd-container #aupd_manual_date_time, #aupd-container form > h2, #aupd-container .form-table tr:nth-child(3), #aupd-container .form-table tr:nth-child(4) {
 	display: none;
+}
+
+.aupd_auto_mode_period_offset_value {
+	margin-top: 10px;
+}
+
+.aupd_auto_mode_period_offset_value > input {
+	width: 55px;
+}
+
+.aupd_auto_mode_period_offset_value > select {
+	vertical-align: top;
 }

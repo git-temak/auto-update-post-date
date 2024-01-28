@@ -25,7 +25,7 @@ if( !function_exists('add_aupd_menu_page') ){
 	function add_aupd_menu_page() {
 	    add_submenu_page(
 	        'tools.php',
-	        'Auto Update Post Date',
+	        'Auto Update Post Date Settings',
 	        'Auto Update Post Date',
 	        'manage_options',
 	        'aupd-settings',

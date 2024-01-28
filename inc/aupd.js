@@ -4,6 +4,9 @@ jQuery(document).ready(function($) {
     let autoModeChecked = $('#aupd_plugin_mode_auto_radio');
     let selectedDateTime = $('#aupd_manual_date_time');
     let dateTimeRow = $('#aupd-container .form-table tr:nth-child(3)');
+    let autoFreqRow = $('#aupd-container .form-table tr:nth-child(4)');
+    let autoOffsetChecked = $('#aupd_auto_mode_period_offset');
+    let autoOffsetOptions = $('#aupd-container .aupd_auto_mode_period_offset_value');
 
     // add element to display selected date and time
     $('.form-table tr:nth-child(3) td').append('<p id="aupd-selected-date-time-val"></p>');
@@ -22,18 +25,33 @@ jQuery(document).ready(function($) {
     }
 
     // toggle datetime row visibility based on plugin mode
-    function updateDateTimeVisibility() {
+    function updateOptionRowVisibility() {
         if (manualModeChecked[0].checked) {
             dateTimeRow.show();
+            autoFreqRow.hide();
+            $('#aupd-container .aupd_auto_mode_period_offset_value > input').val('');
         } else {
             dateTimeRow.hide();
+            autoFreqRow.show();
             selectedDateTime.val('');
         }
     }
 
-    manualModeChecked.add(autoModeChecked).change(updateDateTimeVisibility);
+    // toggle offset options visibility based on if checked/not
+    function updateOffsetOptionVisibility() {
+        if (autoOffsetChecked[0].checked) {
+            autoOffsetOptions.show();
+        } else {
+            autoOffsetOptions.hide();
+            $('#aupd-container .aupd_auto_mode_period_offset_value > input').val('');
+        }
+    }
 
-    updateDateTimeVisibility();
+    manualModeChecked.add(autoModeChecked).change(updateOptionRowVisibility);
+    autoOffsetChecked.change(updateOffsetOptionVisibility);
+
+    updateOptionRowVisibility();
+    updateOffsetOptionVisibility();
 
     selectedDateTime.datetimepicker({
         format: 'Y-m-d H:i:s',
