@@ -25,17 +25,19 @@ function aupd_plugin_settings_init() {
     add_settings_field('aupd_plugin_mode_radio', 'Select plugin mode', 'aupd_plugin_mode_radio_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
     add_settings_field('aupd_post_types_check', 'Select post types', 'aupd_post_types_check_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
     add_settings_field('aupd_manual_date', 'Select date', 'aupd_manual_date_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
+    add_settings_field('aupd_auto_mode_period', 'Select frequency', 'aupd_auto_mode_period_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
 
     register_setting('aupd_plugin_settings_group', 'aupd_plugin_mode_radio', 'sanitize_text_field');
     register_setting('aupd_plugin_settings_group', 'aupd_post_types_check', 'sanitize_text_field');
     register_setting('aupd_plugin_settings_group', 'aupd_manual_date', 'sanitize_text_field');
+    register_setting('aupd_plugin_settings_group', 'aupd_auto_mode_period', 'sanitize_text_field');
 }
 add_action('admin_init', 'aupd_plugin_settings_init');
 
 function aupd_plugin_mode_radio_callback() {
     $value = get_option('aupd_plugin_mode_radio');
     ?>
-    <p>Set if you want to update post dates manually or if you want the plugin to automatically update post dates.</p>
+    <p>Set if you want to update post dates manually or if you want the plugin to automatically update post dates periodically.</p>
     <br>
     <input id="aupd_plugin_mode_manual_radio" type="radio" name="aupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> />
     <label for="aupd_plugin_mode_manual_radio">Manual</label>
@@ -46,8 +48,6 @@ function aupd_plugin_mode_radio_callback() {
 }
 
 function aupd_post_types_check_callback() {
-    $value = get_option('aupd_post_types_check');
-
     // default WP post types
     $defPostTypes = [
         'post',
@@ -89,14 +89,30 @@ function aupd_manual_date_callback() {
         }
 }
 
+function aupd_auto_mode_period_callback() {
+    $value = get_option('aupd_auto_mode_freq');
+    ?>
+    <p>Set how frequently the post dates should be updated.</p>
+    <br>
+    <input id="aupd_auto_mode_period_daily" type="radio" name="aupd_auto_mode_freq" value="daily" <?php checked('daily', $value); ?> />
+    <label for="aupd_auto_mode_period_daily">Daily</label>
+    <br>
+    <input id="aupd_auto_mode_period_weekly" type="radio" name="aupd_auto_mode_freq" value="weekly" <?php checked('weekly', $value); ?> />
+    <label for="aupd_auto_mode_period_daily">Weekly</label>
+    <br>
+    <input id="aupd_auto_mode_period_monthly" type="radio" name="aupd_auto_mode_freq" value="monthly" <?php checked('monthly', $value); ?> />
+    <label for="aupd_auto_mode_period_daily">Monthly</label>
+    <?php
+}
 
-function run_plugin_action() {
+function aupd_runner_action() {
     // Verify nonce for security
     if (isset($_POST['aupd_plugin_nonce_field']) && wp_verify_nonce($_POST['aupd_plugin_nonce_field'], 'aupd_plugin_nonce')) {
 
         // Retrieve form data and perform actions
         $radio_button_value = sanitize_text_field($_POST['aupd_plugin_mode_radio']);
         $date_time_value = sanitize_text_field($_POST['aupd_manual_datetime']);
+        $auto_freq = sanitize_text_field($_POST['aupd_auto_mode_freq']);
 
         $defPostTypes = [
             'post',
@@ -111,19 +127,20 @@ function run_plugin_action() {
 
         $postTypes = array_unique(array_merge($defPostTypes, $cusPostTypes));
 
+        // save user form values
         update_option('aupd_plugin_mode_radio', $radio_button_value);
+        update_option('aupd_manual_datetime', $date_time_value);
+        update_option('aupd_auto_mode_freq', $auto_freq);
 
         foreach($postTypes as $cpt){
-            $cpt = sanitize_text_field($cpt);
-            if(isset($_POST['cpt_' . $cpt])){
+            if( isset(sanitize_text_field($_POST['cpt_' . $cpt])) ){
                 update_option('aupd_cpt_' . $cpt, $cpt);
             }
         }
 
-        update_option('aupd_manual_datetime', $date_time_value);
 
     }
 }
 
 // Hook to run the plugin action when the form is submitted
-add_action('load-tools_page_aupd-settings', 'run_plugin_action');
+add_action('load-tools_page_aupd-settings', 'aupd_runner_action');
