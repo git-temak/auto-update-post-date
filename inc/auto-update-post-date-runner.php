@@ -4,7 +4,7 @@
 if( !function_exists('render_aupd_page') ){
 	function render_aupd_page() {
 	    ?>
-	    <div class="wrap">
+	    <div id="aupd-container" class="wrap">
 	            <h1><?=esc_html(get_admin_page_title());?></h1>
 	            <form method="post" action="<?=esc_url(admin_url('tools.php?page=aupd-settings'));?>">
 	                <?php
@@ -81,7 +81,12 @@ function aupd_manual_date_callback() {
     <p>Set the date and time to be updated on all selected posts. Note that selecting a future date will make your post status to be changed to scheduled.</p>
     <br>
     <input id="aupd_manual_date_time" type="text" name="aupd_manual_datetime" />
-    <?php
+    <?php 
+        if ($value) {
+            $formatDate = new DateTime($value);
+            echo '<p><strong>Currently selected date/time:</strong> ' .
+            $formatDate->format('D M d Y H:i:s') . '</p>';
+        }
 }
 
 
