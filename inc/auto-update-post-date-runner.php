@@ -31,12 +31,14 @@ function aupd_plugin_settings_init() {
     add_settings_section('aupd_plugin_section', 'Plugin Settings', '__return_empty_string', 'aupd_plugin_settings');
 
     add_settings_field('aupd_plugin_mode_radio', 'Select plugin mode', 'aupd_plugin_mode_radio_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
-    add_settings_field('aupd_post_types_check', 'Select post types', 'aupd_post_types_check_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
+    add_settings_field('aupd_post_types_check', 'Select post types and taxonomies', 'aupd_post_types_check_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
+    add_settings_field('aupd_post_dates_update', 'Select date(s) to be updated', 'aupd_post_dates_update_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
     add_settings_field('aupd_manual_date', 'Select date', 'aupd_manual_date_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
     add_settings_field('aupd_auto_mode_period', 'Select frequency', 'aupd_auto_mode_period_callback', 'aupd_plugin_settings', 'aupd_plugin_section');
 
     register_setting('aupd_plugin_settings_group', 'aupd_plugin_mode_radio', 'sanitize_text_field');
     register_setting('aupd_plugin_settings_group', 'aupd_post_types_check', 'sanitize_text_field');
+    register_setting('aupd_plugin_settings_group', 'aupd_post_dates_update', 'sanitize_text_field');
     register_setting('aupd_plugin_settings_group', 'aupd_manual_date', 'sanitize_text_field');
     register_setting('aupd_plugin_settings_group', 'aupd_auto_mode_period', 'sanitize_text_field');
 }
@@ -72,6 +74,8 @@ function aupd_post_types_check_callback() {
     $sitePostTypes = array_unique(array_merge($defPostTypes, $cusPostTypes));
     $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
 
+    $available_taxonomies = get_object_taxonomies( $postTypes, 'object' );
+
     ?>
     <p>Select all the post types to be updated.</p>
     <br>
@@ -79,10 +83,43 @@ function aupd_post_types_check_callback() {
         foreach($postTypes as $cpt){
             $value = get_option('aupd_cpt_' . $cpt, true);
             $checked = ($value) ? 'checked' : '';
+            $cpt_name = get_post_type_object($cpt)->labels->singular_name;
             
             echo '<input type="checkbox" id="cpt_' . $cpt . '" name="cpt_' . $cpt . '" value="cpt_' . $cpt . '"' . $checked .' />';
-            echo '<label for="cpt_' . $cpt. '">' . $cpt . '</label><br>';
+            echo '<label for="cpt_' . $cpt. '">' . $cpt_name . '</label><br>';
         }
+
+    ?>
+    <br>
+    <p>Select post to be updated from specific taxonomies such as categories.</p>
+    <br>
+    <?php
+    if ( $available_taxonomies ) {
+        foreach($available_taxonomies as $taxonomy){
+            $ctt_name = $taxonomy->name;
+            $ctt_value = get_option('aupd_ctt_' . $ctt_name, true);
+            $ctt_checked = (is_string($ctt_value)) ? 'checked' : '';
+            
+            echo '<input type="checkbox" id="ctt_' . $ctt_name . '" name="ctt_' . $ctt_name . '" value="ctt_' . $ctt_name . '"' . $ctt_checked .' />';
+            echo '<label for="ctt_' . $ctt_name. '">' . $taxonomy->labels->name . '</label><br>';
+        }
+    }
+}
+
+function aupd_post_dates_update_callback() {
+    $value = get_option('aupd_post_dates_update', true);
+    ?>
+    <p>Select if the published date or modified date of the post should be updated, or both.</p>
+    <br>
+    <input id="aupd_post_dates_pub_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_date" <?php checked('aupd_pub_date', $value); ?> />
+    <label for="aupd_post_dates_pub_date">Published date</label>
+    <br>
+    <input id="aupd_post_dates_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_mod_date" <?php checked('aupd_mod_date', $value); ?> />
+    <label for="aupd_post_dates_mod_date">Modified date</label>
+    <br>
+    <input id="aupd_post_dates_pub_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_mod_date" <?php checked('aupd_pub_mod_date', $value); ?> />
+    <label for="aupd_post_dates_mod_date">Published & modified dates</label>
+    <?php
 }
 
 function aupd_manual_date_callback() {
@@ -143,6 +180,7 @@ function aupd_runner_action() {
         // Retrieve form data and perform actions
         $radio_button_value = sanitize_text_field($_POST['aupd_plugin_mode_radio']);
         $date_time_value = sanitize_text_field($_POST['aupd_manual_datetime']);
+        $update_date_mode = sanitize_text_field($_POST['aupd_post_dates_update']);
         $auto_freq = sanitize_text_field($_POST['aupd_auto_mode_freq']);
         $offset_mode = sanitize_text_field($_POST['aupd_auto_mode_offset']);
         $offset_mode_val = absint($_POST['aupd_auto_mode_period_offset_value']);
@@ -161,10 +199,12 @@ function aupd_runner_action() {
 
         $sitePostTypes = array_unique(array_merge($defPostTypes, $cusPostTypes));
         $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
+        $available_taxonomies = get_object_taxonomies( $postTypes, 'object' );
 
         // save user form values
         update_option('aupd_plugin_mode_radio', $radio_button_value);
         update_option('aupd_manual_datetime', $date_time_value);
+        update_option('aupd_post_dates_update', $update_date_mode);
         update_option('aupd_auto_mode_freq', $auto_freq);
         update_option('aupd_auto_mode_offset_mode', $offset_mode);
         update_option('aupd_auto_mode_offset_value', $offset_mode_val);
@@ -176,7 +216,14 @@ function aupd_runner_action() {
             }
         }
 
-
+        if ( $available_taxonomies ) {
+            foreach($available_taxonomies as $taxonomy){
+                $ctt_name = $taxonomy->name;
+                if( isset($_POST['ctt_' . $ctt_name]) ){
+                    update_option('aupd_ctt_' . $ctt_name, $ctt_name);
+                }
+            }
+        }
     }
 }
 

@@ -3,13 +3,13 @@ jQuery(document).ready(function($) {
     let manualModeChecked = $('#aupd_plugin_mode_manual_radio');
     let autoModeChecked = $('#aupd_plugin_mode_auto_radio');
     let selectedDateTime = $('#aupd_manual_date_time');
-    let dateTimeRow = $('#aupd-container .form-table tr:nth-child(3)');
-    let autoFreqRow = $('#aupd-container .form-table tr:nth-child(4)');
+    let dateTimeRow = $('#aupd-container .form-table tr:nth-child(4)');
+    let autoFreqRow = $('#aupd-container .form-table tr:nth-child(5)');
     let autoOffsetChecked = $('#aupd_auto_mode_period_offset');
     let autoOffsetOptions = $('#aupd-container .aupd_auto_mode_period_offset_value');
 
     // add element to display selected date and time
-    $('.form-table tr:nth-child(3) td').append('<p id="aupd-selected-date-time-val"></p>');
+    $('.form-table tr:nth-child(4) td').append('<p id="aupd-selected-date-time-val"></p>');
 
     // format datetime picker to wp post format Y-m-d H:i:s
     function formatSelectedDateTime(date) {
