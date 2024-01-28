@@ -4,8 +4,11 @@ jQuery(document).ready(function($) {
     let autoModeChecked = $('#aupd_plugin_mode_auto_radio');
     let selectedDateTime = $('#aupd_manual_date_time');
     let dateTimeRow = $('#aupd-container .form-table tr:nth-child(3)');
-    $('.form-table tr:nth-child(3) td').append('<p id="aupd-selected-date-time-val"></p>');  // add element to display selected date and time
 
+    // add element to display selected date and time
+    $('.form-table tr:nth-child(3) td').append('<p id="aupd-selected-date-time-val"></p>');
+
+    // format datetime picker to wp post format Y-m-d H:i:s
     function formatSelectedDateTime(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -18,22 +21,19 @@ jQuery(document).ready(function($) {
       return formattedDateTime;
     }
 
-    if (manualModeChecked[0].checked === true) {
-        dateTimeRow.show();
-    }
-
-    manualModeChecked.change(function(){
-        if (manualModeChecked[0].checked === true) {
+    // toggle datetime row visibility based on plugin mode
+    function updateDateTimeVisibility() {
+        if (manualModeChecked[0].checked) {
             dateTimeRow.show();
-        }
-    });
-
-    autoModeChecked.change(function(){
-        if (autoModeChecked[0].checked === true) {
+        } else {
             dateTimeRow.hide();
             selectedDateTime.val('');
         }
-    });
+    }
+
+    manualModeChecked.add(autoModeChecked).change(updateDateTimeVisibility);
+
+    updateDateTimeVisibility();
 
     selectedDateTime.datetimepicker({
         format: 'Y-m-d H:i:s',
