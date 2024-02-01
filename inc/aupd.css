@@ -13,3 +13,8 @@
 .aupd_auto_mode_period_offset_value > select {
 	vertical-align: top;
 }
+
+.aupd-all-posts-list {
+	max-height: 500px;
+	overflow-y: scroll;
+}

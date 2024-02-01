@@ -47,7 +47,7 @@ add_action('admin_init', 'aupd_plugin_settings_init');
 function aupd_plugin_mode_radio_callback() {
     $value = get_option('aupd_plugin_mode_radio', true);
     ?>
-    <p>Set if you want to update post dates manually or if you want the plugin to automatically update post dates periodically.</p>
+    <p>Set how you want to update post dates; manually or let the plugin automatically update post dates periodically.</p>
     <br>
     <input id="aupd_plugin_mode_manual_radio" type="radio" name="aupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> />
     <label for="aupd_plugin_mode_manual_radio">Manual</label>
@@ -59,6 +59,9 @@ function aupd_plugin_mode_radio_callback() {
 
 function aupd_post_types_check_callback() {
     global $public_libs_cpt;
+    $filter_mode = get_option('aupd_post_filter_mode', true);
+    $filtered_pids = get_option('aupd_filter_ind_pid', true);   // array of all selected individual posts IDs
+
     // default WP post types
     $defPostTypes = [
         'post',
@@ -91,7 +94,15 @@ function aupd_post_types_check_callback() {
 
     ?>
     <br>
-    <p>Select post to be updated from specific taxonomies such as categories.</p>
+    <p>Tick this option to filter specific posts to be updated. Choose to filter by taxonomy or individual posts.</p>
+    <sub>Please note that only the selected posts or posts that belong to the selected taxonomies will be updated. <strong>If want to update all posts belonging to a post type, untick this filter option and choose the relevant post type(s) above.</strong></sub>
+    <input id="aupd_post_filter_mode_taxes" type="radio" name="aupd_post_filter_mode" value="taxonomy_mode" <?php checked('taxonomy_mode', $filter_mode); ?> />
+    <label for="aupd_post_filter_mode_taxes">Taxonomies (e.g. categories, tags, etc.)</label>
+    <br>
+    <input id="aupd_post_filter_mode_ind_posts" type="radio" name="aupd_post_filter_mode" value="individual_post_mode" <?php checked('individual_post_mode', $filter_mode); ?> />
+    <label for="aupd_post_filter_mode_ind_posts">Specific posts</label>
+    <br>
+    <p>Filter by taxonomy: select posts to be updated from specific taxonomies such as categories.</p>
     <br>
     <?php
     if ( $available_taxonomies ) {
@@ -104,6 +115,34 @@ function aupd_post_types_check_callback() {
             echo '<label for="ctt_' . $ctt_name. '">' . $taxonomy->labels->name . '</label><br>';
         }
     }
+    ?>
+    <br>
+    <p>Select specific posts</p>
+    <sub>Please note that this list shows all published posts from all registered posts types on the site.</strong></sub>
+    <br>
+    <div class="aupd-all-posts-list">
+    <?php
+    $all_posts = get_posts(
+        array(
+          'numberposts' => -1,
+          'post_status' => 'publish',
+          'post_type'   => $postTypes
+        )
+    );
+    if ( $all_posts ) {
+        foreach($all_posts as $post){
+            $post_title = $post->post_title;
+            $post_id = $post->ID;
+
+            $is_present = in_array($filtered_pids, $post_id) ? 'checked' : '';
+            
+            echo '<input type="checkbox" id="aupd_post_' . $post_id . '" name="aupd_ind_post_' . $post_id . '" value="' . $post_id . '"' . $is_present .' />';
+            echo '<label for="aupd_post_' . $post_id. '">' . $post_title . '</label><br>';
+        }
+    }
+
+    ?>
+    </div>
 }
 
 function aupd_post_dates_update_callback() {
@@ -172,19 +211,48 @@ function aupd_auto_mode_period_callback() {
     <?php
 }
 
-function aupd_runner_action() {
+function aupd_plugin_settings_action() {
     global $public_libs_cpt;
     // Verify nonce for security
     if (isset($_POST['aupd_plugin_nonce_field']) && wp_verify_nonce($_POST['aupd_plugin_nonce_field'], 'aupd_plugin_nonce')) {
 
         // Retrieve form data and perform actions
         $radio_button_value = sanitize_text_field($_POST['aupd_plugin_mode_radio']);
-        $date_time_value = sanitize_text_field($_POST['aupd_manual_datetime']);
+        $post_filter_mode = sanitize_text_field($_POST['aupd_post_filter_mode']);
+        $aupd_post_filter_mode_ind_posts = [];  // array of all selected individual posts IDs
         $update_date_mode = sanitize_text_field($_POST['aupd_post_dates_update']);
+        $date_time_value = sanitize_text_field($_POST['aupd_manual_datetime']);
         $auto_freq = sanitize_text_field($_POST['aupd_auto_mode_freq']);
         $offset_mode = sanitize_text_field($_POST['aupd_auto_mode_offset']);
         $offset_mode_val = absint($_POST['aupd_auto_mode_period_offset_value']);
         $offset_mode_unit = sanitize_text_field($_POST['aupd_auto_mode_period_offset_unit']);
+
+        $all_posts = get_posts(
+            array(
+              'numberposts' => -1,
+              'post_status' => 'publish',
+              'post_type'   => $postTypes
+            )
+        );
+        if ( $all_posts ) {
+            foreach($all_posts as $post){
+                $post_id = $post->ID;
+                if( isset($_POST['aupd_ind_post_' . $post_id]) ){
+                    $aupd_post_filter_mode_ind_posts[] = $post_id;
+                }
+            }
+        }
+
+        update_option('aupd_filter_ind_pid', $aupd_post_filter_mode_ind_posts);
+
+        if ( $available_taxonomies ) {
+            foreach($available_taxonomies as $taxonomy){
+                $ctt_name = $taxonomy->name;
+                if( isset($_POST['aupd_ind_post_' . $ctt_name]) ){
+                    update_option('aupd_ctt_' . $ctt_name, $ctt_name);
+                }
+            }
+        }
 
         $defPostTypes = [
             'post',
@@ -203,8 +271,10 @@ function aupd_runner_action() {
 
         // save user form values
         update_option('aupd_plugin_mode_radio', $radio_button_value);
-        update_option('aupd_manual_datetime', $date_time_value);
+        update_option('aupd_post_filter_mode', $post_filter_mode);
+        update_option('aupd_post_filter_mode', $aupd_post_filter_mode_ind_posts);
         update_option('aupd_post_dates_update', $update_date_mode);
+        update_option('aupd_manual_datetime', $date_time_value);
         update_option('aupd_auto_mode_freq', $auto_freq);
         update_option('aupd_auto_mode_offset_mode', $offset_mode);
         update_option('aupd_auto_mode_offset_value', $offset_mode_val);
@@ -224,8 +294,11 @@ function aupd_runner_action() {
                 }
             }
         }
+
+        // run function to update the dates based on plugin settings
+        aupd_runner_action();
     }
 }
 
 // Hook to run the plugin action when the form is submitted
-add_action('load-tools_page_aupd-settings', 'aupd_runner_action');
+add_action('load-tools_page_aupd-settings', 'aupd_plugin_settings_action');
