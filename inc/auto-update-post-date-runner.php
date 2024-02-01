@@ -150,7 +150,6 @@ function aupd_post_types_check_callback() {
             <?php
         }
     }
-
     echo '</div>';
 }
 
