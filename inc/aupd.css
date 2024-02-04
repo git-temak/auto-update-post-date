@@ -40,7 +40,6 @@
 }
 
 .aupd-all-posts-list .aupd-posts-cb-label {
-    margin: auto;
     -webkit-user-select: none;
     user-select: none;
     cursor: pointer;
@@ -50,7 +49,7 @@
     display: inline-block;
     vertical-align: middle;
     transform: translate3d(0, 0, 0);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     color: #fff;
 }
 

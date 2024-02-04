@@ -2,9 +2,14 @@ jQuery(document).ready(function($) {
 
     let manualModeChecked = $('#aupd_plugin_mode_manual_radio');
     let autoModeChecked = $('#aupd_plugin_mode_auto_radio');
+    let taxonomyModeChecked = $('#aupd_post_filter_mode_taxes');
+    let singPostModeChecked = $('#aupd_post_filter_mode_ind_posts');
+    let filterModeChecked = $('#aupd_post_filter_mode_status');
     let selectedDateTime = $('#aupd_manual_date_time');
     let dateTimeRow = $('#aupd-container .form-table tr:nth-child(4)');
     let autoFreqRow = $('#aupd-container .form-table tr:nth-child(5)');
+    let taxPostsRow = $('#aupd-container #aupd-taxonomy-posts');
+    let singPostPostsRow = $('#aupd-container #aupd-specific-posts-list');
     let autoOffsetChecked = $('#aupd_auto_mode_period_offset');
     let autoOffsetOptions = $('#aupd-container .aupd_auto_mode_period_offset_value');
 
@@ -47,11 +52,37 @@ jQuery(document).ready(function($) {
         }
     }
 
+    // toggle posts/taxonomies row visibility based on selected mode
+    function togglePostsRowVisibility() {
+        if (taxonomyModeChecked[0].checked) {
+            taxPostsRow.show();
+            singPostPostsRow.hide();
+        } else {
+            taxPostsRow.hide();
+            singPostPostsRow.show();
+        }
+    }
+
+    // toggle offset options visibility based on if checked/not
+    function toggleFilterModeRowVisibility() {
+        if (filterModeChecked[0].checked) {
+            taxPostsRow.show();
+            singPostPostsRow.show();
+        } else {
+            taxPostsRow.hide();
+            singPostPostsRow.hide();
+        }
+    }
+
     manualModeChecked.add(autoModeChecked).change(updateOptionRowVisibility);
+    taxonomyModeChecked.add(singPostModeChecked).change(togglePostsRowVisibility);
+    filterModeChecked.change(toggleFilterModeRowVisibility);
     autoOffsetChecked.change(updateOffsetOptionVisibility);
 
     updateOptionRowVisibility();
     updateOffsetOptionVisibility();
+    togglePostsRowVisibility();
+    toggleFilterModeRowVisibility();
 
     selectedDateTime.datetimepicker({
         format: 'Y-m-d H:i:s',

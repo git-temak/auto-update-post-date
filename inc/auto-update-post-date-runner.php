@@ -59,8 +59,12 @@ function aupd_plugin_mode_radio_callback() {
 function aupd_post_types_check_callback() {
     global $public_libs_cpt;
     $filter_mode = get_option('aupd_post_filter_mode', true);
+    $filter_on = get_option('aupd_post_filter_mode_status', true);
     $filtered_pids = get_option('aupd_filter_ind_pid');   // array of all selected individual posts IDs
     $filtered_pids = $filtered_pids ? $filtered_pids : [];
+
+    $tax_terms = get_option('aupd_filter_tax_terms');   // array of all selected taxonomy terms
+    $tax_terms = $tax_terms ? $tax_terms : [];
 
     // default WP post types
     $defPostTypes = [
@@ -93,6 +97,9 @@ function aupd_post_types_check_callback() {
 
     ?>
     <br>
+    <input id="aupd_post_filter_mode_status" type="checkbox" name="aupd_post_filter_mode_status" value="checked" <?=$filter_on;?> />
+    <label for="aupd_post_filter_mode_status">Filter posts</label>
+    <br>
     <p>Select an option below to filter specific posts to be updated. Choose to filter by taxonomy or individual posts.</p>
     <sub>Please note that only the selected posts or posts that belong to the selected taxonomies will be updated.
         <br><i><strong>If want to update all posts belonging to a post type, untick this filter option and choose the relevant post type(s) above.</strong></i>
@@ -106,20 +113,31 @@ function aupd_post_types_check_callback() {
     <label for="aupd_post_filter_mode_ind_posts">Specific posts</label>
     <br>
     <br>
+    <div id="aupd-taxonomy-posts">
     <p>Filter by taxonomy: select posts to be updated from specific taxonomies such as categories.</p>
     <?php
     if ( $available_taxonomies ) {
         foreach($available_taxonomies as $taxonomy){
-            $ctt_name = $taxonomy->name;
-            $ctt_value = get_option('aupd_ctt_' . $ctt_name, true);
-            $ctt_checked = (is_string($ctt_value)) ? 'checked' : '';
-            
-            echo '<input type="checkbox" id="ctt_' . $ctt_name . '" name="ctt_' . $ctt_name . '" value="ctt_' . $ctt_name . '"' . $ctt_checked .' />';
-            echo '<label for="ctt_' . $ctt_name. '">' . $taxonomy->labels->name . '</label><br>';
+            $ctt_terms = get_terms($taxonomy);
+
+            echo '<p>' . $taxonomy->labels->name . '<p>';
+            foreach($ctt_terms as $term){
+                $ctt_name = $term->name;
+                $ctt_slug = $term->slug;
+                $ctt_tid = $term->term_taxonomy_id;
+                // $ctt_value = get_option('aupd_ctt_' . $ctt_slug, true);
+                // $ctt_checked = (is_string($ctt_value)) ? 'checked' : '';
+                $ctt_checked = in_array($ctt_tid, $tax_terms) ? 'checked' : '';
+
+                echo '<input type="checkbox" id="ctt_' . $ctt_slug . '" name="aupd_ctt_term_' . $ctt_slug . '" value="' . $ctt_tid . '"' . $ctt_checked .' />';
+                echo '<label for="ctt_' . $ctt_slug. '">' . $ctt_name . '(' . $term->count . ')</label><br>';
+            }
+            echo '<br><br>';
         }
     };
     ?>
-    <br>
+    <br></div>
+    <div id="aupd-specific-posts-list">
     <p>Select specific posts</p>
     <sub>Please note that this list shows all published posts from all registered posts types on the site.</strong></sub>
     <br>
@@ -146,11 +164,11 @@ function aupd_post_types_check_callback() {
             <label class="aupd-posts-cb-label" for="aupd_post_<?=$post_id;?>">
                 <span><svg width="12px" height="10px" viewbox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></span>
                 <span><?=$post_title;?></span>
-            </label><br>
+            </label>
             <?php
         }
     }
-    echo '</div>';
+    echo '</div></div>';
 }
 
 function aupd_post_dates_update_callback() {
@@ -223,11 +241,27 @@ function aupd_plugin_settings_action() {
     global $public_libs_cpt;
     // Verify nonce for security
     if (isset($_POST['aupd_plugin_nonce_field']) && wp_verify_nonce($_POST['aupd_plugin_nonce_field'], 'aupd_plugin_nonce')) {
+        $defPostTypes = [
+            'post',
+            'page'
+        ];
+
+        // get CPTs
+        $cusPostTypes = get_post_types([
+           'public'   => true,
+            '_builtin' => false
+        ]);
+
+        $sitePostTypes = array_unique(array_merge($defPostTypes, $cusPostTypes));
+        $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
+        $available_taxonomies = get_object_taxonomies( $postTypes, 'object' );
 
         // Retrieve form data and perform actions
         $radio_button_value = sanitize_text_field($_POST['aupd_plugin_mode_radio']);
+        $post_filter_mode_status = sanitize_text_field($_POST['aupd_post_filter_mode_status']);
         $post_filter_mode = sanitize_text_field($_POST['aupd_post_filter_mode']);
         $aupd_post_filter_mode_ind_posts = [];  // array of all selected individual posts IDs
+        $aupd_post_filter_mode_tax_terms = [];  // array of all selected taxonomy term slugs
         $update_date_mode = sanitize_text_field($_POST['aupd_post_dates_update']);
         $date_time_value = sanitize_text_field($_POST['aupd_manual_datetime']);
         $auto_freq = sanitize_text_field($_POST['aupd_auto_mode_freq']);
@@ -254,33 +288,24 @@ function aupd_plugin_settings_action() {
 
         if ( $available_taxonomies ) {
             foreach($available_taxonomies as $taxonomy){
-                $ctt_name = $taxonomy->name;
-                if( isset($_POST['aupd_ind_post_' . $ctt_name]) ){
-                    update_option('aupd_ctt_' . $ctt_name, $ctt_name);
+                $ctt_terms = get_terms($taxonomy);
+
+                foreach($ctt_terms as $term){
+                    $ctt_slug = $term->slug;
+                    if( isset($_POST['aupd_ctt_term_' . $ctt_slug]) ){
+                        $aupd_post_filter_mode_tax_terms[] = $ctt_slug;
+                    }
                 }
             }
         }
 
-        $defPostTypes = [
-            'post',
-            'page'
-        ];
-
-        // get CPTs
-        $cusPostTypes = get_post_types([
-           'public'   => true,
-            '_builtin' => false
-        ]);
-
-        $sitePostTypes = array_unique(array_merge($defPostTypes, $cusPostTypes));
-        $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
-        $available_taxonomies = get_object_taxonomies( $postTypes, 'object' );
-
         // save all options as an array so options can be deleted easily on delete
         $aupd_settings_all_options = [
             'aupd_plugin_mode_radio',
+            'aupd_post_filter_mode_status',
             'aupd_post_filter_mode',
             'aupd_filter_ind_pid',
+            'aupd_filter_tax_terms',
             'aupd_post_dates_update',
             'aupd_manual_datetime',
             'aupd_auto_mode_freq',
@@ -289,10 +314,12 @@ function aupd_plugin_settings_action() {
             'aupd_auto_mode_offset_unit'
         ];
 
-        // save user form values
+        // save user settings
         update_option('aupd_plugin_mode_radio', $radio_button_value);
+        update_option('aupd_post_filter_mode_status', $post_filter_mode_status);
         update_option('aupd_post_filter_mode', $post_filter_mode);
         update_option('aupd_filter_ind_pid', $aupd_post_filter_mode_ind_posts);
+        update_option('aupd_filter_tax_terms', $aupd_post_filter_mode_tax_terms);
         update_option('aupd_post_dates_update', $update_date_mode);
         update_option('aupd_manual_datetime', $date_time_value);
         update_option('aupd_auto_mode_freq', $auto_freq);
@@ -307,20 +334,20 @@ function aupd_plugin_settings_action() {
             }
         }
 
-        if ( $available_taxonomies ) {
-            foreach($available_taxonomies as $taxonomy){
-                $ctt_name = $taxonomy->name;
-                if( isset($_POST['ctt_' . $ctt_name]) ){
-                    update_option('aupd_ctt_' . $ctt_name, $ctt_name);
-                    $aupd_settings_all_options[] = 'aupd_ctt_' . $ctt_name;
-                }
-            }
-        }
+        // if ( $available_taxonomies ) {
+        //     foreach($available_taxonomies as $taxonomy){
+        //         $ctt_name = $taxonomy->name;
+        //         if( isset($_POST['ctt_' . $ctt_name]) ){
+        //             update_option('aupd_ctt_' . $ctt_name, $ctt_name);
+        //             $aupd_settings_all_options[] = 'aupd_ctt_' . $ctt_name;
+        //         }
+        //     }
+        // }
 
         update_option('aupd_settings_all_options', $aupd_settings_all_options);
 
         // run function to update the dates based on plugin settings
-        // aupd_runner_action();
+        aupd_runner_action();
     }
 }
 
@@ -345,7 +372,7 @@ function aupd_runner_action(){
     $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
 
     $aupd_cpt_to_be_updated = [];   // array for all cpts to be updated
-    $aupd_ctt_to_be_updated = [];   // array for all taxonomies to be updated
+    // $aupd_ctt_to_be_updated = [];   // array for all taxonomies to be updated
 
     foreach($postTypes as $cpt){
         $value = get_option('aupd_cpt_' . $cpt, true);
@@ -354,8 +381,10 @@ function aupd_runner_action(){
 
     // retrieve plugin options
     $aupd_plugin_mode_radio = get_option('aupd_plugin_mode_radio', true);
+    $aupd_post_filter_mode_status = get_option('aupd_post_filter_mode_status', true);
     $aupd_post_filter_mode = get_option('aupd_post_filter_mode', true);
-    $aupd_filter_ind_pid = get_option('aupd_filter_ind_pid', true);
+    $aupd_filter_ind_pid = get_option('aupd_filter_ind_pid');
+    $aupd_filter_tax_terms = get_option('aupd_filter_tax_terms');
     $aupd_post_dates_update = get_option('aupd_post_dates_update', true);
     $aupd_manual_datetime = ($aupd_plugin_mode_radio == 'manual_mode') ? get_option('aupd_manual_datetime', true) : null;
     $aupd_auto_mode_freq = get_option('aupd_auto_mode_freq', true);
@@ -400,34 +429,35 @@ function aupd_runner_action(){
     ];
 
     // check through the available categories when the selected mode is taxonomies
-    if ($aupd_post_filter_mode == 'taxonomy_mode'){
-        $available_taxonomies = get_object_taxonomies( $postTypes );
+    if ($aupd_post_filter_mode == 'taxonomy_mode' && $aupd_post_filter_mode_status == 'checked'){
+        // $available_taxonomies = get_object_taxonomies( $postTypes );
 
-        foreach($available_taxonomies as $ctt){
-            $value = get_option('aupd_ctt_' . $ctt, true);
-            $aupd_ctt_to_be_updated[] = $value;
-        }
+        // foreach($available_taxonomies as $ctt){
+        //     $value = get_option('aupd_ctt_' . $ctt, true);
+        //     $aupd_ctt_to_be_updated[] = $value;
+        // }
 
-        if (!empty($aupd_ctt_to_be_updated)) {
+        if (!empty($aupd_filter_tax_terms)) {
             $args['tax_query'] = [
                 'relation' => 'OR',
             ];
 
-            foreach ($aupd_ctt_to_be_updated as $ctt) {
-                $taxonomy = $ctt;
-                $terms    = get_terms($taxonomy);
+            foreach ($aupd_filter_tax_terms as $ctt) {
+                $term = get_term_by('term', $ctt);
+                // $terms    = get_terms($taxonomy);
 
                 $args['tax_query'][] = [
-                    'taxonomy' => $ctt,
-                    'field'    => 'slug',
-                    'terms'    => wp_list_pluck($terms, 'slug'),
+                    'taxonomy' => $term->taxonomy,
+                    'field'    => 'term_taxonomy_id',
+                    'terms'    => $ctt,
+                    // 'terms'    => wp_list_pluck($terms, 'slug'),
                 ];
             }
         }
     }
 
     // specific posts mode - run the updates directly on selected posts and date options
-    if ($aupd_post_filter_mode == 'individual_post_mode'){
+    if ($aupd_post_filter_mode == 'individual_post_mode' && $aupd_post_filter_mode_status == 'checked'){
         if (!empty($aupd_filter_ind_pid)) {
             foreach ($aupd_filter_ind_pid as $pid) {
                 $update_post_date = [
@@ -460,7 +490,6 @@ function aupd_runner_action(){
         }
 
         wp_reset_postdata();
-
     }
 
     // if plugin is running in auto mode
@@ -518,7 +547,6 @@ function aupd_runner_action(){
         }
 
         wp_reset_postdata();
-
     }
 
 }
@@ -529,13 +557,15 @@ function auto_update_aarp_posts_date(){
     $aupd_cron_freq = get_option('aupd_auto_mode_freq', true);
     $aupd_plugin_mode = get_option('aupd_plugin_mode_radio', true);
 
-    if ($aupd_plugin_mode == 'auto_mode'){
-        if (!wp_next_scheduled('cron_update_aarp_posts_date')){
-            wp_schedule_event(time(), $aupd_cron_freq, 'cron_update_aarp_posts_date');
-        }
-    } else {
-        if (wp_next_scheduled('cron_update_aarp_posts_date')){
-            wp_clear_scheduled_hook('cron_update_aarp_posts_date');
+    if (isset($aupd_plugin_mode)) {
+        if ($aupd_plugin_mode == 'auto_mode'){
+            if (!wp_next_scheduled('cron_update_aarp_posts_date')){
+                wp_schedule_event(time(), $aupd_cron_freq, 'cron_update_aarp_posts_date');
+            }
+        } else {
+            if (wp_next_scheduled('cron_update_aarp_posts_date')){
+                wp_clear_scheduled_hook('cron_update_aarp_posts_date');
+            }
         }
     }
 }
