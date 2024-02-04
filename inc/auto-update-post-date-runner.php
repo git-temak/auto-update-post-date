@@ -188,7 +188,7 @@ function aupd_post_dates_update_callback() {
 }
 
 function aupd_manual_date_callback() {
-    $value = get_option('aupd_manual_datetime', true);
+    $value = get_option('aupd_manual_datetime');
     ?>
     <p>Set the date and time to be updated on all selected posts. Note that selecting a future date will make your post status to be changed to scheduled.</p>
     <br>
@@ -196,9 +196,7 @@ function aupd_manual_date_callback() {
         echo '<input id="aupd_manual_date_time" type="text" name="aupd_manual_datetime" ';
         if ($value) { echo 'value="' . $value . '"';}
         echo '/>';
-    ?>
 
-    <?php 
         if ($value) {
             $formatDate = new DateTime($value);
             echo '<p><strong>Currently selected date/time:</strong> ' .

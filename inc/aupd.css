@@ -1,4 +1,4 @@
-#aupd-container #aupd_manual_date_time, #aupd-container form > h2, #aupd-container .form-table tr:nth-child(4), #aupd-container .form-table tr:nth-child(5) {
+#aupd-container #aupd_manual_date_time, #aupd-container #aupd-taxonomy-posts, #aupd-container #aupd-specific-posts-list, #aupd-container form > h2, #aupd-container .form-table tr:nth-child(4), #aupd-container .form-table tr:nth-child(5) {
 	display: none;
 }
 
