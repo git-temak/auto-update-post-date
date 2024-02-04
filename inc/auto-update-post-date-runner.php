@@ -140,9 +140,7 @@ function aupd_post_types_check_callback() {
             echo '<label for="aupd_post_' . $post_id. '">' . $post_title . '</label><br>';
         }
     }
-
-    ?>
-    </div>
+    echo '</div>';
 }
 
 function aupd_post_dates_update_callback() {
@@ -150,14 +148,14 @@ function aupd_post_dates_update_callback() {
     ?>
     <p>Select if the published date or modified date of the post should be updated, or both.</p>
     <br>
+    <input id="aupd_post_dates_pub_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_mod_date" <?php checked('aupd_pub_mod_date', $value); ?> />
+    <label for="aupd_post_dates_pub_mod_date">Published & modified dates</label>
+    <br>
     <input id="aupd_post_dates_pub_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_date" <?php checked('aupd_pub_date', $value); ?> />
     <label for="aupd_post_dates_pub_date">Published date</label>
     <br>
     <input id="aupd_post_dates_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_mod_date" <?php checked('aupd_mod_date', $value); ?> />
     <label for="aupd_post_dates_mod_date">Modified date</label>
-    <br>
-    <input id="aupd_post_dates_pub_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_mod_date" <?php checked('aupd_pub_mod_date', $value); ?> />
-    <label for="aupd_post_dates_mod_date">Published & modified dates</label>
     <?php
 }
 
@@ -234,6 +232,7 @@ function aupd_plugin_settings_action() {
               'post_type'   => $postTypes
             )
         );
+
         if ( $all_posts ) {
             foreach($all_posts as $post){
                 $post_id = $post->ID;
@@ -242,8 +241,6 @@ function aupd_plugin_settings_action() {
                 }
             }
         }
-
-        update_option('aupd_filter_ind_pid', $aupd_post_filter_mode_ind_posts);
 
         if ( $available_taxonomies ) {
             foreach($available_taxonomies as $taxonomy){
@@ -269,10 +266,23 @@ function aupd_plugin_settings_action() {
         $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
         $available_taxonomies = get_object_taxonomies( $postTypes, 'object' );
 
+        // save all options as an array so options can be deleted easily on delete
+        $aupd_settings_all_options = [
+            'aupd_plugin_mode_radio',
+            'aupd_post_filter_mode',
+            'aupd_filter_ind_pid',
+            'aupd_post_dates_update',
+            'aupd_manual_datetime',
+            'aupd_auto_mode_freq',
+            'aupd_auto_mode_offset_mode',
+            'aupd_auto_mode_offset_value',
+            'aupd_auto_mode_offset_unit'
+        ];
+
         // save user form values
         update_option('aupd_plugin_mode_radio', $radio_button_value);
         update_option('aupd_post_filter_mode', $post_filter_mode);
-        update_option('aupd_post_filter_mode', $aupd_post_filter_mode_ind_posts);
+        update_option('aupd_filter_ind_pid', $aupd_post_filter_mode_ind_posts);
         update_option('aupd_post_dates_update', $update_date_mode);
         update_option('aupd_manual_datetime', $date_time_value);
         update_option('aupd_auto_mode_freq', $auto_freq);
@@ -283,6 +293,7 @@ function aupd_plugin_settings_action() {
         foreach($postTypes as $cpt){
             if( isset($_POST['cpt_' . $cpt]) ){
                 update_option('aupd_cpt_' . $cpt, $cpt);
+                $aupd_settings_all_options[] = 'aupd_cpt_' . $cpt;
             }
         }
 
@@ -291,9 +302,12 @@ function aupd_plugin_settings_action() {
                 $ctt_name = $taxonomy->name;
                 if( isset($_POST['ctt_' . $ctt_name]) ){
                     update_option('aupd_ctt_' . $ctt_name, $ctt_name);
+                    $aupd_settings_all_options[] = 'aupd_ctt_' . $ctt_name;
                 }
             }
         }
+
+        update_option('aupd_settings_all_options', $aupd_settings_all_options);
 
         // run function to update the dates based on plugin settings
         aupd_runner_action();
@@ -302,3 +316,217 @@ function aupd_plugin_settings_action() {
 
 // Hook to run the plugin action when the form is submitted
 add_action('load-tools_page_aupd-settings', 'aupd_plugin_settings_action');
+
+function aupd_runner_action(){
+    global $public_libs_cpt;
+
+    $defPostTypes = [
+        'post',
+        'page'
+    ];
+
+    // get CPTs
+    $cusPostTypes = get_post_types([
+       'public'   => true,
+        '_builtin' => false
+    ]);
+
+    $sitePostTypes = array_unique(array_merge($defPostTypes, $cusPostTypes));
+    $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
+
+    $aupd_cpt_to_be_updated = [];   // array for all cpts to be updated
+    $aupd_ctt_to_be_updated = [];   // array for all taxonomies to be updated
+
+    foreach($postTypes as $cpt){
+        $value = get_option('aupd_cpt_' . $cpt, true);
+        $aupd_cpt_to_be_updated[] = $value;
+    }
+
+    // retrieve plugin options
+    $aupd_plugin_mode_radio = get_option('aupd_plugin_mode_radio', true);
+    $aupd_post_filter_mode = get_option('aupd_post_filter_mode', true);
+    $aupd_filter_ind_pid = get_option('aupd_filter_ind_pid', true);
+    $aupd_post_dates_update = get_option('aupd_post_dates_update', true);
+    $aupd_manual_datetime = ($aupd_plugin_mode_radio == 'manual_mode') ? get_option('aupd_manual_datetime', true) : null;
+    $aupd_auto_mode_freq = get_option('aupd_auto_mode_freq', true);
+    $aupd_auto_mode_offset_mode = get_option('aupd_auto_mode_offset_mode', true);
+    $aupd_auto_mode_offset_value = get_option('aupd_auto_mode_offset_value', true);
+    $aupd_auto_mode_offset_unit = get_option('aupd_auto_mode_offset_unit', true);
+
+    // set dates to be updated based on selected option
+    switch ($aupd_post_dates_update) {
+        case 'aupd_pub_date':
+            $dates = [
+                'post_date'         =>  $aupd_manual_datetime,
+                'post_date_gmt'     =>  get_gmt_from_date( $aupd_manual_datetime ),
+            ];
+            break;
+        case 'aupd_mod_date':
+            $dates = [
+                'post_modified'     =>  $aupd_manual_datetime,
+                'post_modified_gmt' =>  get_gmt_from_date( $aupd_manual_datetime ),
+            ];
+            break;
+        case 'aupd_pub_mod_date':
+            $dates = [
+                'post_date'         =>  $aupd_manual_datetime,
+                'post_date_gmt'     =>  get_gmt_from_date( $aupd_manual_datetime ),
+                'post_modified'     =>  $aupd_manual_datetime,
+                'post_modified_gmt' =>  get_gmt_from_date( $aupd_manual_datetime ),
+            ];
+            break;
+        default:
+            $dates = [
+                'post_modified'     =>  $aupd_manual_datetime,
+                'post_modified_gmt' =>  get_gmt_from_date( $aupd_manual_datetime ),
+            ];
+            break;
+    }
+
+    // query arguments
+    $args = [
+        'post_type' => $aupd_cpt_to_be_updated,
+        'posts_per_page' => -1,
+    ];
+
+    // check through the available categories when the selected mode is taxonomies
+    if ($aupd_post_filter_mode == 'taxonomy_mode'){
+        $available_taxonomies = get_object_taxonomies( $postTypes );
+
+        foreach($available_taxonomies as $ctt){
+            $value = get_option('aupd_ctt_' . $ctt, true);
+            $aupd_ctt_to_be_updated[] = $value;
+        }
+
+        if (!empty($aupd_ctt_to_be_updated)) {
+            $args['tax_query'] = [
+                'relation' => 'OR',
+            ];
+
+            foreach ($aupd_ctt_to_be_updated as $ctt) {
+                $taxonomy = $ctt;
+                $terms    = get_terms($taxonomy);
+
+                $args['tax_query'][] = [
+                    'taxonomy' => $ctt,
+                    'field'    => 'slug',
+                    'terms'    => wp_list_pluck($terms, 'slug'),
+                ];
+            }
+        }
+    }
+
+    // specific posts mode - run the updates directly on selected posts and date options
+    if ($aupd_post_filter_mode == 'individual_post_mode'){
+        if (!empty($aupd_filter_ind_pid)) {
+            foreach ($aupd_filter_ind_pid as $pid) {
+                $update_post_date = [
+                    'ID'    =>  $pid,
+                ];
+
+                $update_post_date = array_merge($update_post_date, $dates);
+
+                wp_update_post($update_post_date);
+            }
+        }
+    }
+    
+    // if plugin is running in manual mode
+    if ($aupd_plugin_mode_radio == 'manual_mode'){
+        $postsQuery = new WP_Query($args);
+
+        if ($postsQuery->have_posts()) {
+            while ($postsQuery->have_posts()) {
+                $postsQuery->the_post();
+
+                $update_post_date = [
+                    'ID'    =>  get_the_ID(),
+                ];
+
+                $update_post_date = array_merge($update_post_date, $dates);
+
+                wp_update_post($update_post_date);
+            }
+        }
+
+        wp_reset_postdata();
+
+    }
+
+    // if plugin is running in auto mode
+    if ($aupd_plugin_mode_radio == 'auto_mode'){
+        $upd_date_format = 'Y-m-d H:i:s';
+        $current_date = date($upd_date_format);
+
+        // set date to current date
+        switch ($aupd_post_dates_update) {
+            case 'aupd_pub_date':
+                $dates = [
+                    'post_date'         =>  $current_date,
+                    'post_date_gmt'     =>  get_gmt_from_date( $current_date ),
+                ];
+                break;
+            case 'aupd_mod_date':
+                $dates = [
+                    'post_modified'     =>  $current_date,
+                    'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
+                ];
+                break;
+            case 'aupd_pub_mod_date':
+                $dates = [
+                    'post_date'         =>  $current_date,
+                    'post_date_gmt'     =>  get_gmt_from_date( $current_date ),
+                    'post_modified'     =>  $current_date,
+                    'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
+                ];
+                break;
+            default:
+                $dates = [
+                    'post_modified'     =>  $current_date,
+                    'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
+                ];
+                break;
+        }
+
+        $postsQuery = new WP_Query($args);
+
+        if ($postsQuery->have_posts()) {             
+            while ($postsQuery->have_posts()) {
+                $postsQuery->the_post();
+
+                $update_post_date = [
+                    'ID'    =>  get_the_ID(),
+                ];
+
+                if ($aupd_auto_mode_offset_mode == 'checked') {
+                    $current_date = date($upd_date_format, strtotime($current_date . ' +' . $aupd_auto_mode_offset_value . $aupd_auto_mode_offset_unit));
+                }
+
+                $update_post_date = array_merge($update_post_date, $dates);
+                wp_update_post($update_post_date);
+            }
+        }
+
+        wp_reset_postdata();
+
+    }
+
+}
+add_action('cron_update_aarp_posts_date', 'aupd_runner_action');
+
+// cron job
+function auto_update_aarp_posts_date(){
+    $aupd_cron_freq = get_option('aupd_auto_mode_freq', true);
+    $aupd_plugin_mode = get_option('aupd_plugin_mode_radio', true);
+
+    if ($aupd_plugin_mode == 'auto_mode'){
+        if (!wp_next_scheduled('cron_update_aarp_posts_date')){
+            wp_schedule_event(time(), $aupd_cron_freq, 'cron_update_aarp_posts_date');
+        }
+    } else {
+        if (wp_next_scheduled('cron_update_aarp_posts_date')){
+            wp_clear_scheduled_hook('cron_update_aarp_posts_date');
+        }
+    }
+}
+add_action('wp_loaded', 'auto_update_aarp_posts_date');

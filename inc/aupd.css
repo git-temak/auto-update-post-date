@@ -2,19 +2,27 @@
 	display: none;
 }
 
-.aupd_auto_mode_period_offset_value {
+#aupd-container .aupd_auto_mode_period_offset_value {
 	margin-top: 10px;
 }
 
-.aupd_auto_mode_period_offset_value > input {
+#aupd-container .aupd_auto_mode_period_offset_value > input {
 	width: 55px;
 }
 
-.aupd_auto_mode_period_offset_value > select {
+#aupd-container .aupd_auto_mode_period_offset_value > select {
 	vertical-align: top;
 }
 
-.aupd-all-posts-list {
-	max-height: 500px;
-	overflow-y: scroll;
+@media only screen and (min-width:1024px){
+    #aupd-container .aupd-all-posts-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        max-height: 500px;
+		overflow-y: scroll;
+    }
+
+    #aupd-container .aupd-all-posts-list::before {
+        display: none;
+    }
 }
