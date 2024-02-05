@@ -45,7 +45,7 @@ function aupd_plugin_settings_init() {
 add_action('admin_init', 'aupd_plugin_settings_init');
 
 function aupd_plugin_mode_radio_callback() {
-    $value = get_option('aupd_plugin_mode_radio', true);
+    $value = get_option('aupd_plugin_mode_radio');
     ?>
     <p>Set how you want to update post dates; manually or let the plugin automatically update post dates periodically.</p>
     <input id="aupd_plugin_mode_manual_radio" type="radio" name="aupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> />
@@ -58,8 +58,8 @@ function aupd_plugin_mode_radio_callback() {
 
 function aupd_post_types_check_callback() {
     global $public_libs_cpt;
-    $filter_mode = get_option('aupd_post_filter_mode', true);
-    $filter_on = get_option('aupd_post_filter_mode_status', true);
+    $filter_mode = get_option('aupd_post_filter_mode');
+    $filter_on = get_option('aupd_post_filter_mode_status');
     $filtered_pids = get_option('aupd_filter_ind_pid');   // array of all selected individual posts IDs
     $filtered_pids = $filtered_pids ? $filtered_pids : [];
 
@@ -87,7 +87,7 @@ function aupd_post_types_check_callback() {
     <p>Select all the post types to be updated.</p>
     <?php
         foreach($postTypes as $cpt){
-            $value = get_option('aupd_cpt_' . $cpt, true);
+            $value = get_option('aupd_cpt_' . $cpt);
             $checked = ($value) ? 'checked' : '';
             $cpt_name = get_post_type_object($cpt)->labels->singular_name;
             
@@ -104,40 +104,46 @@ function aupd_post_types_check_callback() {
     <sub>Please note that only the selected posts or posts that belong to the selected taxonomies will be updated.
         <br><i><strong>If want to update all posts belonging to a post type, untick this filter option and choose the relevant post type(s) above.</strong></i>
     </sub>
-    <br>
-    <br>
-    <input id="aupd_post_filter_mode_taxes" type="radio" name="aupd_post_filter_mode" value="taxonomy_mode" <?php checked('taxonomy_mode', $filter_mode); ?> />
-    <label for="aupd_post_filter_mode_taxes">Taxonomies (e.g. categories, tags, etc.)</label>
-    <br>
-    <input id="aupd_post_filter_mode_ind_posts" type="radio" name="aupd_post_filter_mode" value="individual_post_mode" <?php checked('individual_post_mode', $filter_mode); ?> />
-    <label for="aupd_post_filter_mode_ind_posts">Specific posts</label>
-    <br>
-    <br>
+    <div id="filter-taxy-radio-group">
+        <br>
+        <input id="aupd_post_filter_mode_taxes" type="radio" name="aupd_post_filter_mode" value="taxonomy_mode" <?php checked('taxonomy_mode', $filter_mode); ?> />
+        <label for="aupd_post_filter_mode_taxes">Taxonomies (e.g. categories, tags, etc.)</label>
+    </div>
+    <div id="filter-spost-radio-group">
+        <input id="aupd_post_filter_mode_ind_posts" type="radio" name="aupd_post_filter_mode" value="individual_post_mode" <?php checked('individual_post_mode', $filter_mode); ?> />
+        <label for="aupd_post_filter_mode_ind_posts">Specific posts</label>
+    </div>
     <div id="aupd-taxonomy-posts">
+    <br>
     <p>Filter by taxonomy: select posts to be updated from specific taxonomies such as categories.</p>
     <?php
     if ( $available_taxonomies ) {
         foreach($available_taxonomies as $taxonomy){
-            $ctt_terms = get_terms($taxonomy);
+            $ctt_terms = get_terms($taxonomy->name);
 
-            echo '<p>' . $taxonomy->labels->name . '<p>';
-            foreach($ctt_terms as $term){
-                $ctt_name = $term->name;
-                $ctt_slug = $term->slug;
-                $ctt_tid = $term->term_taxonomy_id;
-                // $ctt_value = get_option('aupd_ctt_' . $ctt_slug, true);
-                // $ctt_checked = (is_string($ctt_value)) ? 'checked' : '';
-                $ctt_checked = in_array($ctt_tid, $tax_terms) ? 'checked' : '';
+            if ( wp_count_terms($taxonomy->name) != 0 ){
+                echo '<p>' . $taxonomy->labels->name . '</p>';
+                foreach($ctt_terms as $term){
+                    $ctt_name = $term->name;
+                    $ctt_slug = $term->slug;
+                    $ctt_tid = $term->term_taxonomy_id;
+                    // $ctt_value = get_option('aupd_ctt_' . $ctt_slug, true);
+                    // $ctt_checked = (is_string($ctt_value)) ? 'checked' : '';
+                    $ctt_checked = in_array($ctt_tid, $tax_terms) ? 'checked' : '';
 
-                echo '<input type="checkbox" id="ctt_' . $ctt_slug . '" name="aupd_ctt_term_' . $ctt_slug . '" value="' . $ctt_tid . '"' . $ctt_checked .' />';
-                echo '<label for="ctt_' . $ctt_slug. '">' . $ctt_name . '(' . $term->count . ')</label><br>';
+                    echo '<input type="checkbox" id="ctt_' . $ctt_slug . '" name="aupd_ctt_term_' . $ctt_slug . '" value="' . $ctt_tid . '"' . $ctt_checked .' />';
+                    echo '<label for="ctt_' . $ctt_slug. '">' . ucfirst($ctt_name) . ' (' . $term->count . ')</label><br>';
+                }
+                echo '<br>';
             }
-            echo '<br><br>';
         }
-    };
+    } else {
+        echo '<br><br>There are currently no posts assigned to any taxonomies. Add some posts to categories, tags, etc. and come back here to select the relevant taxonomies.<br><br>';
+    }
     ?>
-    <br></div>
+    </div>
     <div id="aupd-specific-posts-list">
+    <br>
     <p>Select specific posts</p>
     <sub>Please note that this list shows all published posts from all registered posts types on the site.</strong></sub>
     <br>
@@ -172,7 +178,7 @@ function aupd_post_types_check_callback() {
 }
 
 function aupd_post_dates_update_callback() {
-    $value = get_option('aupd_post_dates_update', true);
+    $value = get_option('aupd_post_dates_update');
     ?>
     <p>Select if the published date or modified date of the post should be updated, or both.</p>
     <br>
@@ -205,10 +211,10 @@ function aupd_manual_date_callback() {
 }
 
 function aupd_auto_mode_period_callback() {
-    $value = get_option('aupd_auto_mode_freq', true);
-    $offset_ticked = get_option('aupd_auto_mode_offset_mode', true);
-    $offset_value = get_option('aupd_auto_mode_offset_value', true);
-    $offset_unit = get_option('aupd_auto_mode_offset_unit', true);
+    $value = get_option('aupd_auto_mode_freq');
+    $offset_ticked = get_option('aupd_auto_mode_offset_mode');
+    $offset_value = get_option('aupd_auto_mode_offset_value');
+    $offset_unit = get_option('aupd_auto_mode_offset_unit');
     ?>
     <p>Set how frequently the post dates should be updated.</p>
     <br>
@@ -373,22 +379,22 @@ function aupd_runner_action(){
     // $aupd_ctt_to_be_updated = [];   // array for all taxonomies to be updated
 
     foreach($postTypes as $cpt){
-        $value = get_option('aupd_cpt_' . $cpt, true);
+        $value = get_option('aupd_cpt_' . $cpt);
         $aupd_cpt_to_be_updated[] = $value;
     }
 
     // retrieve plugin options
-    $aupd_plugin_mode_radio = get_option('aupd_plugin_mode_radio', true);
-    $aupd_post_filter_mode_status = get_option('aupd_post_filter_mode_status', true);
-    $aupd_post_filter_mode = get_option('aupd_post_filter_mode', true);
+    $aupd_plugin_mode_radio = get_option('aupd_plugin_mode_radio');
+    $aupd_post_filter_mode_status = get_option('aupd_post_filter_mode_status');
+    $aupd_post_filter_mode = get_option('aupd_post_filter_mode');
     $aupd_filter_ind_pid = get_option('aupd_filter_ind_pid');
     $aupd_filter_tax_terms = get_option('aupd_filter_tax_terms');
-    $aupd_post_dates_update = get_option('aupd_post_dates_update', true);
-    $aupd_manual_datetime = ($aupd_plugin_mode_radio == 'manual_mode') ? get_option('aupd_manual_datetime', true) : null;
-    $aupd_auto_mode_freq = get_option('aupd_auto_mode_freq', true);
-    $aupd_auto_mode_offset_mode = get_option('aupd_auto_mode_offset_mode', true);
-    $aupd_auto_mode_offset_value = get_option('aupd_auto_mode_offset_value', true);
-    $aupd_auto_mode_offset_unit = get_option('aupd_auto_mode_offset_unit', true);
+    $aupd_post_dates_update = get_option('aupd_post_dates_update');
+    $aupd_manual_datetime = ($aupd_plugin_mode_radio == 'manual_mode') ? get_option('aupd_manual_datetime') : null;
+    $aupd_auto_mode_freq = get_option('aupd_auto_mode_freq');
+    $aupd_auto_mode_offset_mode = get_option('aupd_auto_mode_offset_mode');
+    $aupd_auto_mode_offset_value = get_option('aupd_auto_mode_offset_value');
+    $aupd_auto_mode_offset_unit = get_option('aupd_auto_mode_offset_unit');
 
     // set dates to be updated based on selected option
     switch ($aupd_post_dates_update) {
@@ -431,7 +437,7 @@ function aupd_runner_action(){
         // $available_taxonomies = get_object_taxonomies( $postTypes );
 
         // foreach($available_taxonomies as $ctt){
-        //     $value = get_option('aupd_ctt_' . $ctt, true);
+        //     $value = get_option('aupd_ctt_' . $ctt);
         //     $aupd_ctt_to_be_updated[] = $value;
         // }
 
@@ -463,7 +469,6 @@ function aupd_runner_action(){
                 ];
 
                 $update_post_date = array_merge($update_post_date, $dates);
-
                 wp_update_post($update_post_date);
             }
         }
@@ -482,7 +487,6 @@ function aupd_runner_action(){
                 ];
 
                 $update_post_date = array_merge($update_post_date, $dates);
-
                 wp_update_post($update_post_date);
             }
         }
@@ -552,8 +556,8 @@ add_action('cron_update_aarp_posts_date', 'aupd_runner_action');
 
 // cron job
 function auto_update_aarp_posts_date(){
-    $aupd_cron_freq = get_option('aupd_auto_mode_freq', true);
-    $aupd_plugin_mode = get_option('aupd_plugin_mode_radio', true);
+    $aupd_cron_freq = get_option('aupd_auto_mode_freq');
+    $aupd_plugin_mode = get_option('aupd_plugin_mode_radio');
 
     if (isset($aupd_plugin_mode)) {
         if ($aupd_plugin_mode == 'auto_mode'){

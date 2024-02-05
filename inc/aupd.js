@@ -4,6 +4,8 @@ jQuery(document).ready(function($) {
     let autoModeChecked = $('#aupd_plugin_mode_auto_radio');
     let taxonomyModeChecked = $('#aupd_post_filter_mode_taxes');
     let singPostModeChecked = $('#aupd_post_filter_mode_ind_posts');
+    let taxonomyModeGroup = $('#filter-taxy-radio-group');
+    let singPostModeGroup = $('#filter-spost-radio-group');
     let filterModeChecked = $('#aupd_post_filter_mode_status');
     let selectedDateTime = $('#aupd_manual_date_time');
     let dateTimeRow = $('#aupd-container .form-table tr:nth-child(4)');
@@ -57,7 +59,8 @@ jQuery(document).ready(function($) {
         if (taxonomyModeChecked[0].checked) {
             taxPostsRow.show();
             singPostPostsRow.hide();
-        } else {
+        }
+        if (singPostModeChecked[0].checked) {
             taxPostsRow.hide();
             singPostPostsRow.show();
         }
@@ -66,9 +69,12 @@ jQuery(document).ready(function($) {
     // toggle offset options visibility based on if checked/not
     function toggleFilterModeRowVisibility() {
         if (filterModeChecked[0].checked) {
-            taxPostsRow.show();
-            singPostPostsRow.show();
+            taxonomyModeGroup.show();
+            singPostModeGroup.show();
+            togglePostsRowVisibility();
         } else {
+            taxonomyModeGroup.hide();
+            singPostModeGroup.hide();
             taxPostsRow.hide();
             singPostPostsRow.hide();
         }
@@ -81,7 +87,6 @@ jQuery(document).ready(function($) {
 
     updateOptionRowVisibility();
     updateOffsetOptionVisibility();
-    togglePostsRowVisibility();
     toggleFilterModeRowVisibility();
 
     selectedDateTime.datetimepicker({
