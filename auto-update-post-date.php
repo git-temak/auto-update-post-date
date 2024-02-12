@@ -50,7 +50,7 @@ add_action('admin_enqueue_scripts', 'aupd_load_scripts_styles');
 // plugin uninstallation
 register_uninstall_hook( __FILE__, 'aupd_plugin_uninstall' );
 function aupd_plugin_uninstall() {
-	$aupd_plugin_settings = get_option('aupd_settings_all_options', true);
+	$aupd_plugin_settings = get_option('aupd_settings_all_options');
 
 	// delete all saved plugin options on uninstall
 	foreach ($aupd_plugin_settings as $aupd_setting){

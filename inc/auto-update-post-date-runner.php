@@ -4,7 +4,8 @@
 $public_libs_cpt = [
     'e-landing-page',
     'jet-form-builder',
-    'elementor_library'
+    'elementor_library',
+    'ct_template'
 ];
 
 // Function to display the settings page
@@ -13,16 +14,16 @@ if( !function_exists('render_aupd_page') ){
         global $plugin_page;
 	    ?>
 	    <div id="aupd-container" class="wrap">
-	            <h1><?=esc_html(get_admin_page_title());?></h1>
-	            <form method="post" action="<?=esc_url(admin_url('tools.php?page='.$plugin_page));?>">
-	                <?php
-		                wp_nonce_field('aupd_plugin_nonce', 'aupd_plugin_nonce_field');
-	                	settings_fields('aupd_plugin_settings_group');
-	                	do_settings_sections('aupd_plugin_settings');
-	                	submit_button('Save Settings');
-	                ?>
-	            </form>
-	        </div>
+            <h1><?=esc_html(get_admin_page_title());?></h1>
+            <form method="post" action="<?=esc_url(admin_url('tools.php?page='.$plugin_page));?>">
+                <?php
+	                wp_nonce_field('aupd_plugin_nonce', 'aupd_plugin_nonce_field');
+                	settings_fields('aupd_plugin_settings_group');
+                	do_settings_sections('aupd_plugin_settings');
+                	submit_button('Save Settings');
+                ?>
+            </form>
+        </div>
 	    <?php
 	}
 }
@@ -48,7 +49,7 @@ function aupd_plugin_mode_radio_callback() {
     $value = get_option('aupd_plugin_mode_radio');
     ?>
     <p>Set how you want to update post dates; manually or let the plugin automatically update post dates periodically.</p>
-    <input id="aupd_plugin_mode_manual_radio" type="radio" name="aupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> />
+    <input id="aupd_plugin_mode_manual_radio" type="radio" name="aupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> required />
     <label for="aupd_plugin_mode_manual_radio">Manual</label>
     <br>
     <input id="aupd_plugin_mode_auto_radio" type="radio" name="aupd_plugin_mode_radio" value="auto_mode" <?php checked('auto_mode', $value); ?> />
@@ -84,7 +85,7 @@ function aupd_post_types_check_callback() {
     $available_taxonomies = get_object_taxonomies( $postTypes, 'object' );
 
     ?>
-    <p>Select all the post types to be updated.</p>
+    <p>Select all the post types to be updated. <i><strong>NB: No posts will be updated if nothing is selected below.</i></strong></p>
     <?php
         foreach($postTypes as $cpt){
             $value = get_option('aupd_cpt_' . $cpt);
@@ -180,9 +181,9 @@ function aupd_post_types_check_callback() {
 function aupd_post_dates_update_callback() {
     $value = get_option('aupd_post_dates_update');
     ?>
-    <p>Select if the published date or modified date of the post should be updated, or both.</p>
+    <p>Select if the published date or modified date of the post should be updated, or both. Default is <i><strong>modified date</i></strong>.</p>
     <br>
-    <input id="aupd_post_dates_pub_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_mod_date" <?php checked('aupd_pub_mod_date', $value); ?> />
+    <input id="aupd_post_dates_pub_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_mod_date" <?php checked('aupd_pub_mod_date', $value); ?> required />
     <label for="aupd_post_dates_pub_mod_date">Published & modified dates</label>
     <br>
     <input id="aupd_post_dates_pub_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_date" <?php checked('aupd_pub_date', $value); ?> />
@@ -216,20 +217,20 @@ function aupd_auto_mode_period_callback() {
     $offset_value = get_option('aupd_auto_mode_offset_value');
     $offset_unit = get_option('aupd_auto_mode_offset_unit');
     ?>
-    <p>Set how frequently the post dates should be updated.</p>
+    <p>Set how frequently the post dates should be updated. Default is <i><strong>weekly</i></strong>.</p>
     <br>
     <input id="aupd_auto_mode_period_daily" type="radio" name="aupd_auto_mode_freq" value="daily" <?php checked('daily', $value); ?> />
     <label for="aupd_auto_mode_period_daily">Daily</label>
     <br>
     <input id="aupd_auto_mode_period_weekly" type="radio" name="aupd_auto_mode_freq" value="weekly" <?php checked('weekly', $value); ?> />
     <label for="aupd_auto_mode_period_weekly">Weekly</label>
-    <br>
-    <input id="aupd_auto_mode_period_monthly" type="radio" name="aupd_auto_mode_freq" value="monthly" <?php checked('monthly', $value); ?> />
-    <label for="aupd_auto_mode_period_monthly">Monthly</label>
+    <!-- <br>
+    <input id="aupd_auto_mode_period_monthly" type="radio" name="aupd_auto_mode_freq" value="monthly" <?php //checked('monthly', $value); ?> />
+    <label for="aupd_auto_mode_period_monthly">Monthly</label> -->
     <br><br>
     <input type="checkbox" id="aupd_auto_mode_period_offset" name="aupd_auto_mode_offset" value="checked" <?=$offset_ticked;?> />
     <label for="aupd_auto_mode_period_offset">Offset post dates?</label><br>
-    <sub>Tick this option if you don't want all updated posts to have the same publish time and you would like to offset the selected posts by set time<br>e.g. 5 mins offset means that Post 2 date will be 5 mins after Post 1.</sub>
+    <sub>Tick this option if you don't want all updated posts to have the same publish time and you would like to offset the selected posts by set time<br><i><strong>e.g. 15 mins offset means that if Post 1's date is 1 Jan 2024, 09:00, Post 2's date will be 1 Jan 2024, 09:15.</i></strong></sub>
     <br>
     <div class="aupd_auto_mode_period_offset_value">
         <input type="number" name="aupd_auto_mode_period_offset_value" min="1" max="60" <?=($offset_value)? 'value="'.$offset_value.'"':''; ?> onkeyup="if(this.value > 60 || this.value < 1) this.value = 59;" />
@@ -261,7 +262,7 @@ function aupd_plugin_settings_action() {
         $available_taxonomies = get_object_taxonomies( $postTypes, 'object' );
 
         // Retrieve form data and perform actions
-        $radio_button_value = sanitize_text_field($_POST['aupd_plugin_mode_radio']);
+        $plugin_mode_status = sanitize_text_field($_POST['aupd_plugin_mode_radio']);
         $post_filter_mode_status = sanitize_text_field($_POST['aupd_post_filter_mode_status']);
         $post_filter_mode = sanitize_text_field($_POST['aupd_post_filter_mode']);
         $aupd_post_filter_mode_ind_posts = [];  // array of all selected individual posts IDs
@@ -272,6 +273,7 @@ function aupd_plugin_settings_action() {
         $offset_mode = sanitize_text_field($_POST['aupd_auto_mode_offset']);
         $offset_mode_val = absint($_POST['aupd_auto_mode_period_offset_value']);
         $offset_mode_unit = sanitize_text_field($_POST['aupd_auto_mode_period_offset_unit']);
+        $plugin_post_types = [];    // store selected post types
 
         $all_posts = get_posts(
             array(
@@ -319,7 +321,7 @@ function aupd_plugin_settings_action() {
         ];
 
         // save user settings
-        update_option('aupd_plugin_mode_radio', $radio_button_value);
+        update_option('aupd_plugin_mode_radio', $plugin_mode_status);
         update_option('aupd_post_filter_mode_status', $post_filter_mode_status);
         update_option('aupd_post_filter_mode', $post_filter_mode);
         update_option('aupd_filter_ind_pid', $aupd_post_filter_mode_ind_posts);
@@ -334,6 +336,7 @@ function aupd_plugin_settings_action() {
         foreach($postTypes as $cpt){
             if( isset($_POST['cpt_' . $cpt]) ){
                 update_option('aupd_cpt_' . $cpt, $cpt);
+                $plugin_post_types[] = 'aupd_cpt_' . $cpt;
                 $aupd_settings_all_options[] = 'aupd_cpt_' . $cpt;
             }
         }
@@ -350,8 +353,10 @@ function aupd_plugin_settings_action() {
 
         update_option('aupd_settings_all_options', $aupd_settings_all_options);
 
-        // run function to update the dates based on plugin settings
-        aupd_runner_action();
+        // run function to update the dates based on plugin settings - only if required fields are not missing
+        if (!is_empty($plugin_mode_status) && !is_empty($plugin_post_types) && !is_empty($update_date_mode)){
+            aupd_runner_action();
+        }
     }
 }
 
@@ -380,7 +385,9 @@ function aupd_runner_action(){
 
     foreach($postTypes as $cpt){
         $value = get_option('aupd_cpt_' . $cpt);
-        $aupd_cpt_to_be_updated[] = $value;
+        if ($value) {
+            $aupd_cpt_to_be_updated[] = $value;
+        }
     }
 
     // retrieve plugin options
@@ -457,6 +464,24 @@ function aupd_runner_action(){
                     // 'terms'    => wp_list_pluck($terms, 'slug'),
                 ];
             }
+
+            $postsTaxQuery = new WP_Query($args);
+
+            if ($postsTaxQuery->have_posts()) {
+                while ($postsTaxQuery->have_posts()) {
+                    $postsTaxQuery->the_post();
+
+                    $update_post_date = [
+                        'ID'    =>  get_the_ID(),
+                    ];
+
+                    $update_post_date = array_merge($update_post_date, $dates);
+                    update_option('aupd_taxargs_manual', $update_post_date); // DEBUG ONLY -- REMOVE AFTER TESTING
+                    wp_update_post($update_post_date);
+                }
+            }
+
+            wp_reset_postdata();
         }
     }
 
@@ -469,13 +494,15 @@ function aupd_runner_action(){
                 ];
 
                 $update_post_date = array_merge($update_post_date, $dates);
+                update_option('aupd_ind_postargs_manual', $update_post_date); // DEBUG ONLY -- REMOVE AFTER TESTING
                 wp_update_post($update_post_date);
             }
         }
     }
     
     // if plugin is running in manual mode
-    if ($aupd_plugin_mode_radio == 'manual_mode'){
+    if ($aupd_plugin_mode_radio == 'manual_mode' && $aupd_post_filter_mode_status != 'checked'){
+        update_option('aupd_args_manual', $args); // DEBUG ONLY -- REMOVE AFTER TESTING
         $postsQuery = new WP_Query($args);
 
         if ($postsQuery->have_posts()) {
@@ -487,6 +514,7 @@ function aupd_runner_action(){
                 ];
 
                 $update_post_date = array_merge($update_post_date, $dates);
+                update_option('aupd_postargs_manual', $update_post_date); // DEBUG ONLY -- REMOVE AFTER TESTING
                 wp_update_post($update_post_date);
             }
         }
@@ -529,6 +557,7 @@ function aupd_runner_action(){
                 break;
         }
 
+        update_option('aupd_args_auto', $args); // DEBUG ONLY -- REMOVE AFTER TESTING
         $postsQuery = new WP_Query($args);
 
         if ($postsQuery->have_posts()) {             
@@ -544,29 +573,29 @@ function aupd_runner_action(){
                 }
 
                 $update_post_date = array_merge($update_post_date, $dates);
+                update_option('aupd_postargs_auto', $update_post_date); // DEBUG ONLY -- REMOVE AFTER TESTING
                 wp_update_post($update_post_date);
             }
         }
 
         wp_reset_postdata();
     }
-
 }
-add_action('cron_update_aarp_posts_date', 'aupd_runner_action');
+add_action('aupd_cron_update_aarp_posts_date', 'aupd_runner_action');
 
 // cron job
 function auto_update_aarp_posts_date(){
-    $aupd_cron_freq = get_option('aupd_auto_mode_freq');
+    $aupd_cron_freq = get_option('aupd_auto_mode_freq') ?: 'weekly';
     $aupd_plugin_mode = get_option('aupd_plugin_mode_radio');
 
     if (isset($aupd_plugin_mode)) {
         if ($aupd_plugin_mode == 'auto_mode'){
-            if (!wp_next_scheduled('cron_update_aarp_posts_date')){
-                wp_schedule_event(time(), $aupd_cron_freq, 'cron_update_aarp_posts_date');
+            if (!wp_next_scheduled('aupd_cron_update_aarp_posts_date')){
+                wp_schedule_event(time(), $aupd_cron_freq, 'aupd_cron_update_aarp_posts_date');
             }
         } else {
-            if (wp_next_scheduled('cron_update_aarp_posts_date')){
-                wp_clear_scheduled_hook('cron_update_aarp_posts_date');
+            if (wp_next_scheduled('aupd_cron_update_aarp_posts_date')){
+                wp_clear_scheduled_hook('aupd_cron_update_aarp_posts_date');
             }
         }
     }

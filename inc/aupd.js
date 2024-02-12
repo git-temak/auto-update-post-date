@@ -36,11 +36,13 @@ jQuery(document).ready(function($) {
         if (manualModeChecked[0].checked) {
             dateTimeRow.show();
             autoFreqRow.hide();
+            $('#aupd-container #aupd_auto_mode_period_daily').prop('required', false);
             $('#aupd-container .aupd_auto_mode_period_offset_value > input').val('');
         } else {
             dateTimeRow.hide();
             autoFreqRow.show();
             selectedDateTime.val('');
+            $('#aupd-container #aupd_auto_mode_period_daily').prop('required', true);
         }
     }
 
@@ -89,9 +91,15 @@ jQuery(document).ready(function($) {
     updateOffsetOptionVisibility();
     toggleFilterModeRowVisibility();
 
+    curDate = selectedDateTime.val() ? selectedDateTime.val() : new Date();
+
     selectedDateTime.datetimepicker({
+        value: curDate,
+        // minDate: 0,
+        // monthStart: new Date().getMonth(),
+        yearStart: new Date().getFullYear(),
         format: 'Y-m-d H:i:s',
-        inline: true
+        inline: true,
     });
 
     selectedDateTime.change(function(){
