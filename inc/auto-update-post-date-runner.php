@@ -182,7 +182,6 @@ function aupd_post_dates_update_callback() {
     $value = get_option('aupd_post_dates_update');
     ?>
     <p>Select if the published date or modified date of the post should be updated, or both. Default is <i><strong>modified date</i></strong>.</p>
-    <br>
     <input id="aupd_post_dates_pub_mod_date" type="radio" name="aupd_post_dates_update" value="aupd_pub_mod_date" <?php checked('aupd_pub_mod_date', $value); ?> required />
     <label for="aupd_post_dates_pub_mod_date">Published & modified dates</label>
     <br>
@@ -218,7 +217,6 @@ function aupd_auto_mode_period_callback() {
     $offset_unit = get_option('aupd_auto_mode_offset_unit');
     ?>
     <p>Set how frequently the post dates should be updated. Default is <i><strong>weekly</i></strong>.</p>
-    <br>
     <input id="aupd_auto_mode_period_daily" type="radio" name="aupd_auto_mode_freq" value="daily" <?php checked('daily', $value); ?> />
     <label for="aupd_auto_mode_period_daily">Daily</label>
     <br>
@@ -354,7 +352,7 @@ function aupd_plugin_settings_action() {
         update_option('aupd_settings_all_options', $aupd_settings_all_options);
 
         // run function to update the dates based on plugin settings - only if required fields are not missing
-        if (!is_empty($plugin_mode_status) && !is_empty($plugin_post_types) && !is_empty($update_date_mode)){
+        if (!empty($plugin_mode_status) && !empty($plugin_post_types) && !empty($update_date_mode)){
             aupd_runner_action();
         }
     }

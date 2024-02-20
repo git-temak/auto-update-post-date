@@ -38,7 +38,8 @@ jQuery(document).ready(function($) {
             autoFreqRow.hide();
             $('#aupd-container #aupd_auto_mode_period_daily').prop('required', false);
             $('#aupd-container .aupd_auto_mode_period_offset_value > input').val('');
-        } else {
+        }
+        if (autoModeChecked[0].checked) {
             dateTimeRow.hide();
             autoFreqRow.show();
             selectedDateTime.val('');
