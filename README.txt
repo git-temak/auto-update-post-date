@@ -1,11 +1,11 @@
-=== Plugin Name ===
+=== Auto Update Post Date ===
 Contributors: temak
 Donate link: https://temak.dev/
-Tags: seo, update, posts, published date, modified date, bulk, date, auto
+Tags: update, posts, bulk, date, auto
 Requires at least: 3.0.1
 Tested up to: 6.4.3
 Requires PHP: 7.2
-Stable tag: 4.3
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
