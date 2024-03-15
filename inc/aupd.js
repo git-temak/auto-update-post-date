@@ -18,6 +18,11 @@ jQuery(document).ready(function($) {
     // add element to display selected date and time
     $('.form-table tr:nth-child(4) td').append('<p id="aupd-selected-date-time-val"></p>');
 
+    // select or deselect all posts based on toggle checkbox
+    $("#aupd_post_checkall").change(function () {
+        $(".aupd-all-posts-list input[type='checkbox']:not(.aupd_post_checkall)").prop('checked', $(this).prop("checked"));
+    });
+
     // format datetime picker to wp post format Y-m-d H:i:s
     function formatSelectedDateTime(date) {
       const year = date.getFullYear();

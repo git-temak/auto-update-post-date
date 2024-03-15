@@ -39,10 +39,10 @@ add_action('admin_menu', 'add_aupd_menu_page');
 // Load script and styles
 function aupd_load_scripts_styles()
 {
-    wp_enqueue_script('cs-jsDatetimePicker', plugin_dir_url(__FILE__) . 'inc/jquery.datetimepicker.full.min.js', );
-    wp_enqueue_style('cs-jsDatetimePickerStyle', plugin_dir_url(__FILE__) . 'inc/jquery.datetimepicker.min.css');
-    wp_enqueue_script('aupdscript', plugin_dir_url(__FILE__) . 'inc/aupd.js');
-    wp_enqueue_style('aupdstyles', plugin_dir_url(__FILE__) . 'inc/aupd.css');
+    wp_enqueue_script('cs-jsDatetimePicker', plugin_dir_url(__FILE__) . 'inc/jquery.datetimepicker.full.min.js', array('jquery'), '1.0.0', true);
+    wp_enqueue_style('cs-jsDatetimePickerStyle', plugin_dir_url(__FILE__) . 'inc/jquery.datetimepicker.min.css', array(), '1.0.0', 'all');
+    wp_enqueue_script('aupdscript', plugin_dir_url(__FILE__) . 'inc/aupd.js', array('jquery'), '1.0.0', true);
+    wp_enqueue_style('aupdstyles', plugin_dir_url(__FILE__) . 'inc/aupd.css', array(), '1.0.0', 'all');
 }
 
 add_action('admin_enqueue_scripts', 'aupd_load_scripts_styles');

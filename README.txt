@@ -9,11 +9,11 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Keep your WordPress content evergreen with Auto Update Post Date – a simple WP plugin designed to effortlessly update your posts and boost SEO
+Keep your WordPress content evergreen with Auto Update Post Date – a FREE simple WP plugin designed to effortlessly update your posts and boost SEO
 
 == Description ==
 
-Keep your WordPress content evergreen with Auto Update Post Date – a simple WP plugin designed to effortlessly update your posts, boost SEO, and maintain credibility with your audience. Bid farewell to outdated information as Auto Update Post Date takes care of the heavy lifting for you!
+Keep your WordPress content evergreen with Auto Update Post Date – a simple WP plugin designed to effortlessly update your posts, boost SEO, and maintain credibility with your audience. Bid farewell to outdated information as Auto Update Post Date takes care of the heavy lifting for you! The plugin is completely FREE and open source so feel free to leave feature requests or contribute on [GitHub](https://github.com/git-temak/auto-update-post-date).
 
 #### Key Features:
 
@@ -34,6 +34,9 @@ Build credibility and trust with your audience by periodically updating your con
 
 1. User-Friendly Interface:
 The plugin settings page makes it easy to set up, manage, and monitor your auto-update settings. Even if you're new to WordPress plugins, Auto Update Post Date simplifies the process for you.
+
+1. Supports Custom Post Types:
+Have custom post types on your site? Simply select your desired post type and what date you would like to update.
 
 == Installation ==
 
@@ -59,6 +62,19 @@ Under the "Tools" WordPress admin menu, click on the new menu item "Auto Update 
 = Is this going to make my posts rank as number 1 in search engine result pages? =
 
 There is no one way to get number 1 in search engines and this plugin does not guarantee that.
+
+= Are there paid add-ons? =
+
+No, the plugin is completely free and open source so you will not be required to pay for any add-ons.
+
+= How can I contribute to the plugin? =
+
+Please contribute using the repo on [GitHub](https://github.com/git-temak/auto-update-post-date).
+
+= How can I request for features? =
+
+Please submit feature requests on [GitHub](https://github.com/git-temak/auto-update-post-date/issues/new/choose).
+
 
 == Screenshots ==
 

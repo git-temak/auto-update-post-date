@@ -102,8 +102,7 @@ function aupd_post_types_check_callback() {
     <label for="aupd_post_filter_mode_status">Filter posts</label>
     <br>
     <p>Select an option below to filter specific posts to be updated. Choose to filter by taxonomy or individual posts.</p>
-    <sub>Please note that only the selected posts or posts that belong to the selected taxonomies will be updated.
-        <br><i><strong>If want to update all posts belonging to a post type, untick this filter option and choose the relevant post type(s) above.</strong></i>
+    <sub>Please note that only the selected posts or posts that belong to the selected taxonomies will be updated. <i><strong>If want to update all posts belonging to a post type, untick this filter option and choose the relevant post type(s) above.</strong></i>
     </sub>
     <div id="filter-taxy-radio-group">
         <br>
@@ -128,8 +127,6 @@ function aupd_post_types_check_callback() {
                     $ctt_name = $term->name;
                     $ctt_slug = $term->slug;
                     $ctt_tid = $term->term_taxonomy_id;
-                    // $ctt_value = get_option('aupd_ctt_' . $ctt_slug, true);
-                    // $ctt_checked = (is_string($ctt_value)) ? 'checked' : '';
                     $ctt_checked = in_array($ctt_tid, $tax_terms) ? 'checked' : '';
 
                     echo '<input type="checkbox" id="ctt_' . $ctt_slug . '" name="aupd_ctt_term_' . $ctt_slug . '" value="' . $ctt_tid . '"' . $ctt_checked .' />';
@@ -159,6 +156,12 @@ function aupd_post_types_check_callback() {
         )
     );
     if ( $all_posts ) {
+        echo '<input type="checkbox" class="aupd-posts-checkbox aupd_post_checkall" id="aupd_post_checkall" name="aupd_post_checkall" />
+            <label class="aupd-posts-cb-label" for="aupd_post_checkall">
+                <span><svg width="12px" height="10px" viewbox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></span>
+                <span>Select/deselect all posts</span>
+            </label><br>';
+
         foreach($all_posts as $post){
             $post_title = $post->post_title;
             $post_id = $post->ID;
@@ -205,8 +208,7 @@ function aupd_manual_date_callback() {
 
         if ($value) {
             $formatDate = new DateTime($value);
-            echo '<p><strong>Currently selected date/time:</strong> ' .
-            $formatDate->format('D M d Y H:i:s') . '</p>';
+            echo '<p><strong>Currently selected date/time:</strong> ' . $formatDate->format('D M d Y H:i:s') . '</p>';
         }
 }
 
@@ -264,7 +266,7 @@ function aupd_plugin_settings_action() {
         $post_filter_mode_status = sanitize_text_field($_POST['aupd_post_filter_mode_status']);
         $post_filter_mode = sanitize_text_field($_POST['aupd_post_filter_mode']);
         $aupd_post_filter_mode_ind_posts = [];  // array of all selected individual posts IDs
-        $aupd_post_filter_mode_tax_terms = [];  // array of all selected taxonomy term slugs
+        $aupd_post_filter_mode_tax_terms = [];  // array of all selected taxonomy term IDs
         $update_date_mode = sanitize_text_field($_POST['aupd_post_dates_update']);
         $date_time_value = sanitize_text_field($_POST['aupd_manual_datetime']);
         $auto_freq = sanitize_text_field($_POST['aupd_auto_mode_freq']);
@@ -291,19 +293,19 @@ function aupd_plugin_settings_action() {
         }
 
         if ( $available_taxonomies ) {
-            foreach($available_taxonomies as $taxonomy){
-                $ctt_terms = get_terms($taxonomy);
+            foreach($available_taxonomies as $key => $value){
+                $ctt_terms = get_terms($key);
 
                 foreach($ctt_terms as $term){
                     $ctt_slug = $term->slug;
                     if( isset($_POST['aupd_ctt_term_' . $ctt_slug]) ){
-                        $aupd_post_filter_mode_tax_terms[] = $ctt_slug;
+                        $aupd_post_filter_mode_tax_terms[] = absint($_POST['aupd_ctt_term_' . $ctt_slug]);
                     }
                 }
             }
         }
 
-        // save all options as an array so options can be deleted easily on delete
+        // save all options as an array so options can be deleted easily on plugin uninstall
         $aupd_settings_all_options = [
             'aupd_plugin_mode_radio',
             'aupd_post_filter_mode_status',
@@ -336,23 +338,15 @@ function aupd_plugin_settings_action() {
                 update_option('aupd_cpt_' . $cpt, $cpt);
                 $plugin_post_types[] = 'aupd_cpt_' . $cpt;
                 $aupd_settings_all_options[] = 'aupd_cpt_' . $cpt;
+            } else {
+                delete_option('aupd_cpt_' . $cpt);  // clear all previously ticked cpts if any
             }
         }
-
-        // if ( $available_taxonomies ) {
-        //     foreach($available_taxonomies as $taxonomy){
-        //         $ctt_name = $taxonomy->name;
-        //         if( isset($_POST['ctt_' . $ctt_name]) ){
-        //             update_option('aupd_ctt_' . $ctt_name, $ctt_name);
-        //             $aupd_settings_all_options[] = 'aupd_ctt_' . $ctt_name;
-        //         }
-        //     }
-        // }
 
         update_option('aupd_settings_all_options', $aupd_settings_all_options);
 
         // run function to update the dates based on plugin settings - only if required fields are not missing
-        if (!empty($plugin_mode_status) && !empty($plugin_post_types) && !empty($update_date_mode)){
+        if (!empty($plugin_mode_status) && !empty($update_date_mode) && (!empty($plugin_post_types) || !empty($post_filter_mode))){
             aupd_runner_action();
         }
     }
@@ -380,7 +374,6 @@ function aupd_runner_action(){
     $postTypes = array_unique(array_diff($sitePostTypes, $public_libs_cpt));
 
     $aupd_cpt_to_be_updated = [];   // array for all cpts to be updated
-    // $aupd_ctt_to_be_updated = [];   // array for all taxonomies to be updated
 
     foreach($postTypes as $cpt){
         $value = get_option('aupd_cpt_' . $cpt);
@@ -432,26 +425,14 @@ function aupd_runner_action(){
             break;
     }
 
-    // set the number of dates to be updated in the db
-    $placeholders_count = count($dates);
-    $format_placeholders = array_fill(0, $placeholders_count, '%s');
-    $date_format_string = implode(', ', $format_placeholders);
-
     // query arguments
     $args = [
         'post_type' => $aupd_cpt_to_be_updated,
         'posts_per_page' => -1,
     ];
 
-    // check through the available categories when the selected mode is taxonomies
-    if ($aupd_post_filter_mode == 'taxonomy_mode' && $aupd_post_filter_mode_status == 'checked'){
-        // $available_taxonomies = get_object_taxonomies( $postTypes );
-
-        // foreach($available_taxonomies as $ctt){
-        //     $value = get_option('aupd_ctt_' . $ctt);
-        //     $aupd_ctt_to_be_updated[] = $value;
-        // }
-
+    // check through the available taxonomies when the selected mode is taxonomies
+    if ($aupd_plugin_mode_radio && $aupd_post_filter_mode == 'taxonomy_mode' && $aupd_post_filter_mode_status == 'checked'){
         if (!empty($aupd_filter_tax_terms)) {
             $args['tax_query'] = [
                 'relation' => 'OR',
@@ -459,13 +440,11 @@ function aupd_runner_action(){
 
             foreach ($aupd_filter_tax_terms as $ctt) {
                 $term = get_term_by('term', $ctt);
-                // $terms    = get_terms($taxonomy);
 
                 $args['tax_query'][] = [
                     'taxonomy' => $term->taxonomy,
                     'field'    => 'term_taxonomy_id',
                     'terms'    => $ctt,
-                    // 'terms'    => wp_list_pluck($terms, 'slug'),
                 ];
             }
 
@@ -479,11 +458,9 @@ function aupd_runner_action(){
                         $wpdb->posts,
                         $dates,
                         ['ID' => get_the_ID()],
-                        $date_format_string,
-                        ['%d']
+                        '%s',
+                        '%d'
                     );
-                    
-                    update_option('aupd_taxargs_manual', $updated); // DEBUG ONLY -- REMOVE AFTER TESTING
                 }
             }
 
@@ -492,32 +469,22 @@ function aupd_runner_action(){
     }
 
     // specific posts mode - run the updates directly on selected posts and date options
-    if ($aupd_post_filter_mode == 'individual_post_mode' && $aupd_post_filter_mode_status == 'checked'){
+    if ($aupd_plugin_mode_radio && $aupd_post_filter_mode == 'individual_post_mode' && $aupd_post_filter_mode_status == 'checked'){
         if (!empty($aupd_filter_ind_pid)) {
             foreach ($aupd_filter_ind_pid as $pid) {
-
                 $updated = $wpdb->update(
                     $wpdb->posts,
                     $dates,
                     ['ID' => $pid],
-                    $date_format_string,
-                    ['%d']
+                    '%s',
+                    '%d'
                 );
-
-                // $update_post_date = [
-                //     'ID'    =>  $pid,
-                // ];
-
-                // $update_post_date = array_merge($update_post_date, $dates);
-                update_option('aupd_ind_postargs_manual', $updated); // DEBUG ONLY -- REMOVE AFTER TESTING
-                // wp_update_post($update_post_date);
             }
         }
     }
     
     // if plugin is running in manual mode
     if ($aupd_plugin_mode_radio == 'manual_mode' && $aupd_post_filter_mode_status != 'checked'){
-        update_option('aupd_args_manual', $args); // DEBUG ONLY -- REMOVE AFTER TESTING
         $postsQuery = new WP_Query($args);
 
         if ($postsQuery->have_posts()) {
@@ -528,13 +495,9 @@ function aupd_runner_action(){
                     $wpdb->posts,
                     $dates,
                     ['ID' => get_the_ID()],
-                    $date_format_string,
-                    ['%d']
+                    '%s',
+                    '%d'
                 );
-
-                // $update_post_date = array_merge($update_post_date, $dates);
-                update_option('aupd_postargs_manual', $update_post_date); // DEBUG ONLY -- REMOVE AFTER TESTING
-                // wp_update_post($update_post_date);
             }
         }
 
@@ -544,69 +507,46 @@ function aupd_runner_action(){
     // if plugin is running in auto mode
     if ($aupd_plugin_mode_radio == 'auto_mode'){
         $upd_date_format = 'Y-m-d H:i:s';
-        $current_date = gmdate($upd_date_format);
+        $current_date = current_time($upd_date_format);
 
-        if ($aupd_auto_mode_offset_mode == 'checked') {
-            $current_date = gmdate($upd_date_format, strtotime($current_date . ' +' . $aupd_auto_mode_offset_value . $aupd_auto_mode_offset_unit));
-        }
-
-        // set date to current date
-        switch ($aupd_post_dates_update) {
-            case 'aupd_pub_date':
-                $dates = [
-                    'post_date'         =>  $current_date,
-                    'post_date_gmt'     =>  get_gmt_from_date( $current_date ),
-                ];
-                break;
-            case 'aupd_mod_date':
-                $dates = [
-                    'post_modified'     =>  $current_date,
-                    'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
-                ];
-                break;
-            case 'aupd_pub_mod_date':
-                $dates = [
-                    'post_date'         =>  $current_date,
-                    'post_date_gmt'     =>  get_gmt_from_date( $current_date ),
-                    'post_modified'     =>  $current_date,
-                    'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
-                ];
-                break;
-            default:
-                $dates = [
-                    'post_modified'     =>  $current_date,
-                    'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
-                ];
-                break;
-        }
-
-        // set the number of dates to be updated in the db
-        $placeholders_count = count($dates);
-        $format_placeholders = array_fill(0, $placeholders_count, '%s');
-        $date_format_string = implode(', ', $format_placeholders);
-
-        update_option('aupd_args_auto', $args); // DEBUG ONLY -- REMOVE AFTER TESTING
         $postsQuery = new WP_Query($args);
 
         if ($postsQuery->have_posts()) {             
             while ($postsQuery->have_posts()) {
                 $postsQuery->the_post();
 
-                // $update_post_date = [
-                //     'ID'    =>  get_the_ID(),
-                // ];
+                // set date to current date
+                if ($aupd_post_dates_update == 'aupd_pub_date'){
+                    $dates = [
+                        'post_date'         =>  $current_date,
+                        'post_date_gmt'     =>  get_gmt_from_date( $current_date ),
+                    ];
+                } elseif ($aupd_post_dates_update == 'aupd_pub_mod_date') {
+                    $dates = [
+                        'post_date'         =>  $current_date,
+                        'post_date_gmt'     =>  get_gmt_from_date( $current_date ),
+                        'post_modified'     =>  $current_date,
+                        'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
+                    ];
+                } else {
+                    $dates = [
+                        'post_modified'     =>  $current_date,
+                        'post_modified_gmt' =>  get_gmt_from_date( $current_date ),
+                    ];
+                }
 
                 $updated = $wpdb->update(
                     $wpdb->posts,
                     $dates,
                     ['ID' => get_the_ID()],
-                    $date_format_string,
-                    ['%d']
+                    '%s',
+                    '%d'
                 );
 
-                // $update_post_date = array_merge($update_post_date, $dates);
-                update_option('aupd_postargs_auto', $update_post_date); // DEBUG ONLY -- REMOVE AFTER TESTING
-                // wp_update_post($update_post_date);
+                if ($aupd_auto_mode_offset_mode == 'checked') {
+                    $offset = strtotime('+' . $aupd_auto_mode_offset_value . $aupd_auto_mode_offset_unit, time());
+                    $current_date = gmdate($upd_date_format, $offset);
+                }
             }
         }
 
@@ -619,14 +559,22 @@ add_action('aupd_cron_update_aarp_posts_date', 'aupd_runner_action');
 function auto_update_aarp_posts_date(){
     $aupd_cron_freq = get_option('aupd_auto_mode_freq') ?: 'weekly';
     $aupd_plugin_mode = get_option('aupd_plugin_mode_radio');
+    $aupd_cron_exists = wp_next_scheduled('aupd_cron_update_aarp_posts_date');
 
     if (isset($aupd_plugin_mode)) {
         if ($aupd_plugin_mode == 'auto_mode'){
-            if (!wp_next_scheduled('aupd_cron_update_aarp_posts_date')){
+            if ($aupd_cron_exists){
+                // only change the freq if the user changed it
+                $aupd_event = wp_get_scheduled_event('aupd_cron_update_aarp_posts_date');
+                if ($aupd_event->schedule !== $aupd_cron_freq) {
+                    wp_clear_scheduled_hook('aupd_cron_update_aarp_posts_date');
+                    wp_reschedule_event($aupd_cron_exists, $aupd_cron_freq, 'aupd_cron_update_aarp_posts_date');
+                }
+            } else {
                 wp_schedule_event(time(), $aupd_cron_freq, 'aupd_cron_update_aarp_posts_date');
             }
         } else {
-            if (wp_next_scheduled('aupd_cron_update_aarp_posts_date')){
+            if ($aupd_cron_exists){
                 wp_clear_scheduled_hook('aupd_cron_update_aarp_posts_date');
             }
         }
