@@ -6,8 +6,8 @@ Requires at least: 3.0.1
 Tested up to: 6.4.3
 Requires PHP: 7.2
 Stable tag: 1.0.0
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Keep your WordPress content evergreen with Auto Update Post Date – a FREE simple WP plugin designed to effortlessly update your posts and boost SEO
 
@@ -37,6 +37,10 @@ The plugin settings page makes it easy to set up, manage, and monitor your auto-
 
 1. Supports Custom Post Types:
 Have custom post types on your site? Simply select your desired post type and what date you would like to update.
+
+#### Dependencies:
+
+This plugin uses a jQuery Date and Time Picker from [xdsoft](https://xdsoft.net/jqplugins/datetimepicker/), full uncompressed version of the minified JS and CSS can be found on the [GitHub Repo](https://github.com/xdan/datetimepicker/tree/master).
 
 == Installation ==
 
