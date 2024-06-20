@@ -1,6 +1,6 @@
 === Auto Update Post Date ===
 Contributors: temak
-Donate link: https://temak.dev/
+Donate link: https://github.com/sponsors/git-temak
 Tags: update, posts, bulk, date, auto
 Requires at least: 3.0.1
 Tested up to: 6.4.3
