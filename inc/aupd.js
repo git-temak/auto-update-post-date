@@ -1,18 +1,18 @@
 jQuery(document).ready(function($) {
 
-    let manualModeChecked = $('#aupd_plugin_mode_manual_radio');
-    let autoModeChecked = $('#aupd_plugin_mode_auto_radio');
-    let taxonomyModeChecked = $('#aupd_post_filter_mode_taxes');
-    let singPostModeChecked = $('#aupd_post_filter_mode_ind_posts');
+    let manualModeChecked = $('#tmaupd_plugin_mode_manual_radio');
+    let autoModeChecked = $('#tmaupd_plugin_mode_auto_radio');
+    let taxonomyModeChecked = $('#tmaupd_post_filter_mode_taxes');
+    let singPostModeChecked = $('#tmaupd_post_filter_mode_ind_posts');
     let taxonomyModeGroup = $('#filter-taxy-radio-group');
     let singPostModeGroup = $('#filter-spost-radio-group');
-    let filterModeChecked = $('#aupd_post_filter_mode_status');
+    let filterModeChecked = $('#tmaupd_post_filter_mode_status');
     let selectedDateTime = $('#aupd_manual_date_time');
     let dateTimeRow = $('#aupd-container .form-table tr:nth-child(4)');
     let autoFreqRow = $('#aupd-container .form-table tr:nth-child(5)');
     let taxPostsRow = $('#aupd-container #aupd-taxonomy-posts');
     let singPostPostsRow = $('#aupd-container #aupd-specific-posts-list');
-    let autoOffsetChecked = $('#aupd_auto_mode_period_offset');
+    let autoOffsetChecked = $('#tmaupd_auto_mode_period_offset');
     let autoOffsetOptions = $('#aupd-container .aupd_auto_mode_period_offset_value');
 
     // add element to display selected date and time
@@ -41,14 +41,14 @@ jQuery(document).ready(function($) {
         if (manualModeChecked[0].checked) {
             dateTimeRow.show();
             autoFreqRow.hide();
-            $('#aupd-container #aupd_auto_mode_period_daily').prop('required', false);
+            $('#aupd-container #tmaupd_auto_mode_period_daily').prop('required', false);
             $('#aupd-container .aupd_auto_mode_period_offset_value > input').val('');
         }
         if (autoModeChecked[0].checked) {
             dateTimeRow.hide();
             autoFreqRow.show();
             selectedDateTime.val('');
-            $('#aupd-container #aupd_auto_mode_period_daily').prop('required', true);
+            $('#aupd-container #tmaupd_auto_mode_period_daily').prop('required', true);
         }
     }
 

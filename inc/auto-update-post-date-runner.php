@@ -49,10 +49,10 @@ function tmaupd_plugin_mode_radio_callback() {
     $value = get_option('tmaupd_plugin_mode_radio');
     ?>
     <p>Set how you want to update post dates; manually or let the plugin automatically update post dates periodically.</p>
-    <input id="aupd_plugin_mode_manual_radio" type="radio" name="tmaupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> required />
+    <input id="tmaupd_plugin_mode_manual_radio" type="radio" name="tmaupd_plugin_mode_radio" value="manual_mode" <?php checked('manual_mode', $value); ?> required />
     <label for="tmaupd_plugin_mode_manual_radio">Manual</label>
     <br>
-    <input id="aupd_plugin_mode_auto_radio" type="radio" name="tmaupd_plugin_mode_radio" value="auto_mode" <?php checked('auto_mode', $value); ?> />
+    <input id="tmaupd_plugin_mode_auto_radio" type="radio" name="tmaupd_plugin_mode_radio" value="auto_mode" <?php checked('auto_mode', $value); ?> />
     <label for="tmaupd_plugin_mode_auto_radio">Auto</label>
     <?php
 }
@@ -98,7 +98,7 @@ function tmaupd_post_types_check_callback() {
 
     ?>
     <br>
-    <input id="aupd_post_filter_mode_status" type="checkbox" name="tmaupd_post_filter_mode_status" value="checked" <?php echo esc_attr($filter_on);?> />
+    <input id="tmaupd_post_filter_mode_status" type="checkbox" name="tmaupd_post_filter_mode_status" value="checked" <?php echo esc_attr($filter_on);?> />
     <label for="tmaupd_post_filter_mode_status">Filter posts</label>
     <br>
     <p>Select an option below to filter specific posts to be updated. Choose to filter by taxonomy or individual posts.</p>
@@ -106,11 +106,11 @@ function tmaupd_post_types_check_callback() {
     </sub>
     <div id="filter-taxy-radio-group">
         <br>
-        <input id="aupd_post_filter_mode_taxes" type="radio" name="tmaupd_post_filter_mode" value="taxonomy_mode" <?php checked('taxonomy_mode', $filter_mode); ?> />
+        <input id="tmaupd_post_filter_mode_taxes" type="radio" name="tmaupd_post_filter_mode" value="taxonomy_mode" <?php checked('taxonomy_mode', $filter_mode); ?> />
         <label for="tmaupd_post_filter_mode_taxes">Taxonomies (e.g. categories, tags, etc.)</label>
     </div>
     <div id="filter-spost-radio-group">
-        <input id="aupd_post_filter_mode_ind_posts" type="radio" name="tmaupd_post_filter_mode" value="individual_post_mode" <?php checked('individual_post_mode', $filter_mode); ?> />
+        <input id="tmaupd_post_filter_mode_ind_posts" type="radio" name="tmaupd_post_filter_mode" value="individual_post_mode" <?php checked('individual_post_mode', $filter_mode); ?> />
         <label for="tmaupd_post_filter_mode_ind_posts">Specific posts</label>
     </div>
     <div id="aupd-taxonomy-posts">
@@ -185,13 +185,13 @@ function tmaupd_post_dates_update_callback() {
     $value = get_option('tmaupd_post_dates_update');
     ?>
     <p>Select if the published date or modified date of the post should be updated, or both. Default is <i><strong>modified date</i></strong>.</p>
-    <input id="aupd_post_dates_pub_mod_date" type="radio" name="tmaupd_post_dates_update" value="tmaupd_pub_mod_date" <?php checked('tmaupd_pub_mod_date', $value); ?> required />
+    <input id="tmaupd_post_dates_pub_mod_date" type="radio" name="tmaupd_post_dates_update" value="tmaupd_pub_mod_date" <?php checked('tmaupd_pub_mod_date', $value); ?> required />
     <label for="tmaupd_post_dates_pub_mod_date">Published & modified dates</label>
     <br>
-    <input id="aupd_post_dates_pub_date" type="radio" name="tmaupd_post_dates_update" value="tmaupd_pub_date" <?php checked('tmaupd_pub_date', $value); ?> />
+    <input id="tmaupd_post_dates_pub_date" type="radio" name="tmaupd_post_dates_update" value="tmaupd_pub_date" <?php checked('tmaupd_pub_date', $value); ?> />
     <label for="tmaupd_post_dates_pub_date">Published date</label>
     <br>
-    <input id="aupd_post_dates_mod_date" type="radio" name="tmaupd_post_dates_update" value="tmaupd_mod_date" <?php checked('tmaupd_mod_date', $value); ?> />
+    <input id="tmaupd_post_dates_mod_date" type="radio" name="tmaupd_post_dates_update" value="tmaupd_mod_date" <?php checked('tmaupd_mod_date', $value); ?> />
     <label for="tmaupd_post_dates_mod_date">Modified date</label>
     <?php
 }
@@ -219,16 +219,16 @@ function tmaupd_auto_mode_period_callback() {
     $offset_unit = get_option('tmaupd_auto_mode_offset_unit');
     ?>
     <p>Set how frequently the post dates should be updated. Default is <i><strong>weekly</i></strong>.</p>
-    <input id="aupd_auto_mode_period_daily" type="radio" name="tmaupd_auto_mode_freq" value="daily" <?php checked('daily', $value); ?> />
+    <input id="tmaupd_auto_mode_period_daily" type="radio" name="tmaupd_auto_mode_freq" value="daily" <?php checked('daily', $value); ?> />
     <label for="tmaupd_auto_mode_period_daily">Daily</label>
     <br>
-    <input id="aupd_auto_mode_period_weekly" type="radio" name="tmaupd_auto_mode_freq" value="weekly" <?php checked('weekly', $value); ?> />
+    <input id="tmaupd_auto_mode_period_weekly" type="radio" name="tmaupd_auto_mode_freq" value="weekly" <?php checked('weekly', $value); ?> />
     <label for="tmaupd_auto_mode_period_weekly">Weekly</label>
     <!-- <br>
-    <input id="aupd_auto_mode_period_monthly" type="radio" name="tmaupd_auto_mode_freq" value="monthly" <?php //checked('monthly', $value); ?> />
+    <input id="tmaupd_auto_mode_period_monthly" type="radio" name="tmaupd_auto_mode_freq" value="monthly" <?php //checked('monthly', $value); ?> />
     <label for="tmaupd_auto_mode_period_monthly">Monthly</label> -->
     <br><br>
-    <input type="checkbox" id="aupd_auto_mode_period_offset" name="tmaupd_auto_mode_offset" value="checked" <?php echo esc_html($offset_ticked);?> />
+    <input type="checkbox" id="tmaupd_auto_mode_period_offset" name="tmaupd_auto_mode_offset" value="checked" <?php echo esc_html($offset_ticked);?> />
     <label for="tmaupd_auto_mode_period_offset">Offset post dates?</label><br>
     <sub>Tick this option if you don't want all updated posts to have the same publish time and you would like to offset the selected posts by set time<br><i><strong>e.g. 15 mins offset means that if Post 1's date is 1 Jan 2024, 09:00, Post 2's date will be 1 Jan 2024, 09:15.</i></strong></sub>
     <br>
