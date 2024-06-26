@@ -544,7 +544,7 @@ function tmaupd_runner_action(){
                 );
 
                 if ($aupd_auto_mode_offset_mode == 'checked') {
-                    $offset = strtotime('+' . $aupd_auto_mode_offset_value . $aupd_auto_mode_offset_unit, time());
+                    $offset = strtotime('+' . $aupd_auto_mode_offset_value . $aupd_auto_mode_offset_unit, strtotime($current_date));
                     $current_date = gmdate($upd_date_format, $offset);
                 }
             }
