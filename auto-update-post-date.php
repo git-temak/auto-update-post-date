@@ -36,6 +36,16 @@ if( !function_exists('tmaupd_menu_page') ){
 
 add_action('admin_menu', 'tmaupd_menu_page');
 
+// log events to file
+function tmaupd_log_updates($log, $date = true){
+    $filename = plugin_dir_path(__FILE__). 'aupd_log.txt';
+	if ($date){
+		file_put_contents($filename, $log . ' - ' . date('Y-m-d H:i:s') . "\n\n", FILE_APPEND);
+	} else {
+		file_put_contents($filename, $log . "\n\n", FILE_APPEND);
+	}
+}
+
 // Load script and styles
 function tmaupd_load_scripts_styles()
 {

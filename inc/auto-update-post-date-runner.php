@@ -36,12 +36,14 @@ function tmaupd_plugin_settings_init() {
     add_settings_field('tmaupd_post_dates_update', 'Select date(s) to be updated', 'tmaupd_post_dates_update_callback', 'tmaupd_plugin_settings', 'tmaupd_plugin_section');
     add_settings_field('tmaupd_manual_date', 'Select date', 'tmaupd_manual_date_callback', 'tmaupd_plugin_settings', 'tmaupd_plugin_section');
     add_settings_field('tmaupd_auto_mode_period', 'Select frequency', 'tmaupd_auto_mode_period_callback', 'tmaupd_plugin_settings', 'tmaupd_plugin_section');
+    add_settings_field('tmaupd_keep_log', 'Keep log', 'tmaupd_keep_log_callback', 'tmaupd_plugin_settings', 'tmaupd_plugin_section');
 
     register_setting('tmaupd_plugin_settings_group', 'tmaupd_plugin_mode_radio', 'sanitize_text_field');
     register_setting('tmaupd_plugin_settings_group', 'tmaupd_post_types_check', 'sanitize_text_field');
     register_setting('tmaupd_plugin_settings_group', 'tmaupd_post_dates_update', 'sanitize_text_field');
     register_setting('tmaupd_plugin_settings_group', 'tmaupd_manual_date', 'sanitize_text_field');
     register_setting('tmaupd_plugin_settings_group', 'tmaupd_auto_mode_period', 'sanitize_text_field');
+    register_setting('tmaupd_plugin_settings_group', 'tmaupd_keep_log', 'sanitize_text_field');
 }
 add_action('admin_init', 'tmaupd_plugin_settings_init');
 
@@ -199,7 +201,7 @@ function tmaupd_post_dates_update_callback() {
 function tmaupd_manual_date_callback() {
     $value = get_option('tmaupd_manual_datetime');
     ?>
-    <p>Set the date and time to be updated on all selected posts. Note that selecting a future date will make your post status to be changed to scheduled.</p>
+    <p>Set the date and time to be updated on all selected posts. Note that selecting a future date will set your post status to scheduled.</p>
     <br>
     <?php
         echo '<input id="aupd_manual_date_time" type="text" name="tmaupd_manual_datetime" ';
@@ -242,6 +244,23 @@ function tmaupd_auto_mode_period_callback() {
     <?php
 }
 
+function tmaupd_keep_log_callback() {
+    $value = get_option('tmaupd_keep_log');
+    ?>
+    <p>Tick this to keep a log of posts that are updated.</p>
+    <input id="tmaupd_keep_log" type="checkbox" name="tmaupd_keep_log" value="checked" <?php echo esc_attr($value);?> />
+    <label for="tmaupd_keep_log">Keep log</label>
+    <br>
+    <?php
+        // show log file content
+        $log_file = trailingslashit(dirname(plugin_dir_path(__FILE__))) . 'aupd_log.txt';
+        if (file_exists($log_file) && filesize($log_file) > 0) {
+            $log_content = file_get_contents($log_file);
+            echo '<div id="tmaupd_view_button"><button data-viewstate="false">View Log</button></div>';
+            echo '<textarea id="tmaupd_log_area" readonly rows="20" cols="100">' . esc_html($log_content) . '</textarea>';
+        }
+}
+
 function tmaupd_plugin_settings_action() {
     global $tmaupd_public_libs_cpt;
     // Verify nonce for security
@@ -273,6 +292,7 @@ function tmaupd_plugin_settings_action() {
         $offset_mode = sanitize_text_field($_POST['tmaupd_auto_mode_offset']);
         $offset_mode_val = absint($_POST['tmaupd_auto_mode_period_offset_value']);
         $offset_mode_unit = sanitize_text_field($_POST['tmaupd_auto_mode_period_offset_unit']);
+        $keep_logs = sanitize_text_field($_POST['tmaupd_keep_log']);
         $plugin_post_types = [];    // store selected post types
 
         $all_posts = get_posts(
@@ -317,7 +337,8 @@ function tmaupd_plugin_settings_action() {
             'tmaupd_auto_mode_freq',
             'tmaupd_auto_mode_offset_mode',
             'tmaupd_auto_mode_offset_value',
-            'tmaupd_auto_mode_offset_unit'
+            'tmaupd_auto_mode_offset_unit',
+            'tmaupd_keep_log'
         ];
 
         // save user settings
@@ -332,6 +353,7 @@ function tmaupd_plugin_settings_action() {
         update_option('tmaupd_auto_mode_offset_mode', $offset_mode);
         update_option('tmaupd_auto_mode_offset_value', $offset_mode_val);
         update_option('tmaupd_auto_mode_offset_unit', $offset_mode_unit);
+        update_option('tmaupd_keep_log', $keep_logs);
 
         foreach($postTypes as $cpt){
             if( isset($_POST['cpt_' . $cpt]) ){
@@ -390,10 +412,10 @@ function tmaupd_runner_action(){
     $aupd_filter_tax_terms = get_option('tmaupd_filter_tax_terms');
     $aupd_post_dates_update = get_option('tmaupd_post_dates_update');
     $aupd_manual_datetime = ($aupd_plugin_mode_radio == 'manual_mode') ? get_option('tmaupd_manual_datetime') : null;
-    $aupd_auto_mode_freq = get_option('tmaupd_auto_mode_freq');
     $aupd_auto_mode_offset_mode = get_option('tmaupd_auto_mode_offset_mode');
     $aupd_auto_mode_offset_value = get_option('tmaupd_auto_mode_offset_value');
     $aupd_auto_mode_offset_unit = get_option('tmaupd_auto_mode_offset_unit');
+    $keep_logs = get_option('tmaupd_keep_log') ?: false;
 
     // set dates to be updated based on selected option
     switch ($aupd_post_dates_update) {
@@ -461,6 +483,10 @@ function tmaupd_runner_action(){
                         '%s',
                         '%d'
                     );
+
+                    if ($keep_logs){
+                        tmaupd_log_updates('Post: ' . get_the_title() . ' updated successfully');
+                    }
                 }
             }
 
