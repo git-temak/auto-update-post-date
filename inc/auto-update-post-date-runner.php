@@ -549,6 +549,26 @@ function tmaupd_runner_action(){
             while ($postsQuery->have_posts()) {
                 $postsQuery->the_post();
 
+                if ($aupd_auto_mode_offset_mode == 'checked') {
+                    $offset_value = $aupd_auto_mode_offset_value;
+                    $offset_unit = $aupd_auto_mode_offset_unit;
+
+                    $offset_in_seconds = 0;
+
+                    switch ($offset_unit) {
+                        case 'hours':
+                            $offset_in_seconds = $offset_value * 3600;
+                            break;
+                        default:
+                            $offset_in_seconds = $offset_value * 60;
+                            break;
+                    }
+
+                    $min_time = strtotime($current_date) - $offset_in_seconds;
+                    $random_time = mt_rand($min_time, strtotime($current_date));
+                    $current_date = date($upd_date_format, $random_time);
+                }
+
                 // set date to current date
                 if ($aupd_post_dates_update == 'tmaupd_pub_date'){
                     $dates = [
