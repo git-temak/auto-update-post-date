@@ -484,7 +484,7 @@ function tmaupd_runner_action(){
                         '%d'
                     );
 
-                    if ($keep_logs){
+                    if ($keep_logs && $updated) {
                         tmaupd_log_updates('Post: ' . get_the_title() . ' updated successfully');
                     }
                 }
@@ -505,6 +505,10 @@ function tmaupd_runner_action(){
                     '%s',
                     '%d'
                 );
+
+                if ($keep_logs && $updated) {
+                    tmaupd_log_updates('Post: ' . get_the_title($pid) . ' updated successfully');
+                }
             }
         }
     }
@@ -524,6 +528,10 @@ function tmaupd_runner_action(){
                     '%s',
                     '%d'
                 );
+
+                if ($keep_logs && $updated) {
+                    tmaupd_log_updates('Post: ' . get_the_title() . ' updated successfully');
+                }
             }
         }
 
@@ -569,9 +577,8 @@ function tmaupd_runner_action(){
                     '%d'
                 );
 
-                if ($aupd_auto_mode_offset_mode == 'checked') {
-                    $offset = strtotime('+' . $aupd_auto_mode_offset_value . $aupd_auto_mode_offset_unit, strtotime($current_date));
-                    $current_date = gmdate($upd_date_format, $offset);
+                if ($keep_logs && $updated) {
+                    tmaupd_log_updates('Post: ' . get_the_title() . ' updated successfully');
                 }
             }
         }
