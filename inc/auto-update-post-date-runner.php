@@ -232,7 +232,7 @@ function tmaupd_auto_mode_period_callback() {
     <br><br>
     <input type="checkbox" id="tmaupd_auto_mode_period_offset" name="tmaupd_auto_mode_offset" value="checked" <?php echo esc_html($offset_ticked);?> />
     <label for="tmaupd_auto_mode_period_offset">Offset post dates?</label><br>
-    <sub>Tick this option if you don't want all updated posts to have the same publish time and you would like to offset the selected posts by set time<br><i><strong>e.g. 15 mins offset means that if Post 1's date is 1 Jan 2024, 09:00, Post 2's date will be 1 Jan 2024, 09:15.</i></strong></sub>
+    <sub>Tick this option if you don't want all updated posts to have the same publish time and you would like to offset the selected posts by set time<br><i><strong>e.g. 15 mins offset means that if Post 1's date is 1 Jan 2024, 09:30, Post 2's date will be any time between Post 1's date and 1 Jan 2024, 09:45.</i></strong></sub>
     <br>
     <div class="aupd_auto_mode_period_offset_value">
         <input type="number" name="tmaupd_auto_mode_period_offset_value" min="1" max="60" <?php echo ($offset_value)? 'value="'.absint($offset_value).'"':''; ?> onkeyup="if(this.value > 60 || this.value < 1) this.value = 59;" />
@@ -485,7 +485,7 @@ function tmaupd_runner_action(){
                     );
 
                     if ($keep_logs && $updated) {
-                        tmaupd_log_updates('Post: ' . get_the_title() . ' updated successfully');
+                        tmaupd_log_updates(get_the_title() . ' updated successfully');
                     }
                 }
             }
@@ -507,7 +507,7 @@ function tmaupd_runner_action(){
                 );
 
                 if ($keep_logs && $updated) {
-                    tmaupd_log_updates('Post: ' . get_the_title($pid) . ' updated successfully');
+                    tmaupd_log_updates(get_the_title($pid) . ' updated successfully');
                 }
             }
         }
@@ -530,7 +530,7 @@ function tmaupd_runner_action(){
                 );
 
                 if ($keep_logs && $updated) {
-                    tmaupd_log_updates('Post: ' . get_the_title() . ' updated successfully');
+                    tmaupd_log_updates(get_the_title() . ' updated successfully');
                 }
             }
         }
@@ -598,7 +598,7 @@ function tmaupd_runner_action(){
                 );
 
                 if ($keep_logs && $updated) {
-                    tmaupd_log_updates('Post: ' . get_the_title() . ' updated successfully');
+                    tmaupd_log_updates(get_the_title() . ' updated successfully');
                 }
             }
         }
