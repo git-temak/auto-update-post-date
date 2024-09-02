@@ -114,4 +114,9 @@ jQuery(document).ready(function($) {
         $('#aupd-selected-date-time-val').html('<strong>Selected date/time:</strong> ' + selectedDateTimeVal);
     });
 
+    // toggle visibility of log area
+    $('#tmaupd_view_button').click(function() {
+        $('#tmaupd_log_area').toggle();
+    });
+
 });

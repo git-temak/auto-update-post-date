@@ -3,9 +3,9 @@ Contributors: temak
 Donate link: https://github.com/sponsors/git-temak
 Tags: update, posts, bulk, date, auto
 Requires at least: 3.0.1
-Tested up to: 6.4.3
+Tested up to: 6.6.1
 Requires PHP: 7.2
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -89,6 +89,10 @@ Please submit feature requests on [GitHub](https://github.com/git-temak/auto-upd
 
 = 1.0.0 =
 * Initial release
+
+= 1.0.1 =
+* Fix offset not working correctly in auto mode
+* Add logs
 
 == Upgrade Notice ==
 * None

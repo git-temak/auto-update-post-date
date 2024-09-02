@@ -14,11 +14,24 @@
 	vertical-align: top;
 }
 
-.aupd-all-posts-list {
+#tmaupd_view_button {
+    margin: 20px 0;
+    background-color: #111;
+    color: #fff;
+    border-radius: 4px;
+    padding: 10px 25px;
+    width: fit-content;
+}
+
+.aupd-all-posts-list, #tmaupd_log_area {
 	max-height: 400px;
 	overflow-y: scroll;
 	padding: 20px;
     background-color: #0e253d;
+}
+
+#tmaupd_log_area {
+    color: #fff;
 }
 
 @media only screen and (min-width:1024px){
@@ -31,7 +44,6 @@
         display: none;
     }
 }
-
 
 /* checkbox styles */
 .aupd-all-posts-list input[type="checkbox"] {
