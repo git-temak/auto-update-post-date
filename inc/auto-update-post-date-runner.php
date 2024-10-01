@@ -159,7 +159,7 @@ function tmaupd_post_types_check_callback() {
     );
     if ( $all_posts ) {
         echo '<input type="checkbox" class="aupd-posts-checkbox aupd_post_checkall" id="aupd_post_checkall" name="tmaupd_post_checkall" />
-            <label class="aupd-posts-cb-label" for="tmaupd_post_checkall">
+            <label class="aupd-posts-cb-label" for="aupd_post_checkall">
                 <span><svg width="12px" height="10px" viewbox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></span>
                 <span>Select/deselect all posts</span>
             </label><br>';
@@ -173,7 +173,7 @@ function tmaupd_post_types_check_callback() {
             echo '<input type="checkbox" class="aupd-posts-checkbox" id="aupd_post_' . absint($post_id) . '" name="tmaupd_ind_post_' . absint($post_id) . '" value="' . absint($post_id) . '"' . esc_attr($is_present) .' />';
             ?>
 
-            <label class="aupd-posts-cb-label" for="tmaupd_post_<?php echo absint($post_id);?>">
+            <label class="aupd-posts-cb-label" for="aupd_post_<?php echo absint($post_id);?>">
                 <span><svg width="12px" height="10px" viewbox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></span>
                 <span><?php echo esc_html($post_title);?></span>
             </label>

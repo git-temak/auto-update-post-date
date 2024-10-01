@@ -2,7 +2,7 @@
 /*
 Plugin Name: Auto Update Post Date
 Description: Keep your WordPress content evergreen with Auto Update Post Date – a simple WP plugin designed to effortlessly update your posts and boost SEO. Bid farewell to outdated information as this plugin takes care of the heavy lifting for you!
-Version:     	1.0.1
+Version:     	1.0.2
 Author:      	Temak
 Author URI:  	https://temak.dev
 Plugin URI:  	https://github.com/git-temak/auto-update-post-date
