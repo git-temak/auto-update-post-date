@@ -1,0 +1,37 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"preferredVersions": {
+		"php": "latest",
+		"wp": "latest"
+	},
+	"siteOptions": {
+		"blogname": "Auto Update Post Date Plugin Demo"
+	},
+	"plugins": [
+		"auto-update-post-date"
+	],
+	"steps": [
+        {
+			"step": "runPHP",
+			"code": "<?php require_once('/wordpress/wp-load.php'); wp_insert_post(array( 'post_title' => 'Test Post 1', 'post_content' => '<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>','post_status' => 'publish', 'post_author' => '1' ));"
+		},
+        {
+			"step": "runPHP",
+			"code": "<?php require_once('/wordpress/wp-load.php'); wp_insert_post(array( 'post_title' => 'Test Post 2', 'post_content' => '<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>','post_status' => 'publish', 'post_author' => '1' ));"
+		},
+        {
+			"step": "runPHP",
+			"code": "<?php require_once('/wordpress/wp-load.php'); wp_insert_post(array( 'post_title' => 'Test Post 3', 'post_content' => '<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>','post_status' => 'publish', 'post_author' => '1' ));"
+		},
+        {
+			"step": "runPHP",
+			"code": "<?php require_once('/wordpress/wp-load.php'); wp_insert_post(array( 'post_title' => 'Test Post 4', 'post_content' => '<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>','post_status' => 'publish', 'post_author' => '1' ));"
+		},
+        {
+			"step": "runPHP",
+			"code": "<?php require_once('/wordpress/wp-load.php'); wp_insert_post(array( 'post_title' => 'Test Post 5', 'post_content' => '<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>','post_status' => 'publish', 'post_author' => '1' ));"
+		}		
+	],
+	"login": true,
+	"landingPage": "/wp-admin/tools.php?page=tmaupd-settings"
+}
