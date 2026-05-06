@@ -3,6 +3,7 @@
 // List of all public cpts to be exluded. These include common libraries like elementor, jetengine, etc. Can be extended to more popular plugins
 $tmaupd_public_libs_cpt = [
     'e-landing-page',
+    'e-floating-buttons',
     'jet-form-builder',
     'elementor_library',
     'ct_template'
@@ -93,7 +94,7 @@ function tmaupd_post_types_check_callback() {
             $value = get_option('tmaupd_cpt_' . $cpt);
             $checked = ($value) ? 'checked' : '';
             $cpt_name = get_post_type_object($cpt)->labels->singular_name;
-            
+
             echo '<input type="checkbox" id="cpt_' . esc_attr($cpt) . '" name="cpt_' . esc_attr($cpt) . '" value="cpt_' . esc_attr($cpt) . '"' . esc_attr($checked) .' />';
             echo '<label for="cpt_' . esc_attr($cpt) . '">' . esc_html($cpt_name) . '</label><br>';
         }
@@ -104,7 +105,7 @@ function tmaupd_post_types_check_callback() {
     <label for="tmaupd_post_filter_mode_status">Filter posts</label>
     <br>
     <p>Select an option below to filter specific posts to be updated. Choose to filter by taxonomy or individual posts.</p>
-    <sub>Please note that only the selected posts or posts that belong to the selected taxonomies will be updated. <i><strong>If want to update all posts belonging to a post type, untick this filter option and choose the relevant post type(s) above.</strong></i>
+    <sub>Please note that only the selected posts or posts that belong to the selected taxonomies will be updated. <i><strong>If you want to update all posts belonging to a post type, untick this filter option and choose the relevant post type(s) above.</strong></i>
     </sub>
     <div id="filter-taxy-radio-group">
         <br>
@@ -152,9 +153,10 @@ function tmaupd_post_types_check_callback() {
     <?php
     $all_posts = get_posts(
         array(
-          'numberposts' => -1,
-          'post_status' => 'publish',
-          'post_type'   => $postTypes
+            'numberposts' => -1,
+            'post_status' => 'publish',
+            'fields'      => 'ids',
+            'post_type'   => $postTypes
         )
     );
     if ( $all_posts ) {
@@ -164,12 +166,10 @@ function tmaupd_post_types_check_callback() {
                 <span>Select/deselect all posts</span>
             </label><br>';
 
-        foreach($all_posts as $post){
-            $post_title = $post->post_title;
-            $post_id = $post->ID;
-
+        foreach($all_posts as $post_id){
+            $post_title = get_the_title($post_id);
             $is_present = in_array($post_id, $filtered_pids) ? 'checked' : '';
-            
+
             echo '<input type="checkbox" class="aupd-posts-checkbox" id="aupd_post_' . absint($post_id) . '" name="tmaupd_ind_post_' . absint($post_id) . '" value="' . absint($post_id) . '"' . esc_attr($is_present) .' />';
             ?>
 
@@ -297,15 +297,15 @@ function tmaupd_plugin_settings_action() {
 
         $all_posts = get_posts(
             array(
-              'numberposts' => -1,
-              'post_status' => 'publish',
-              'post_type'   => $postTypes
+                'numberposts' => -1,
+                'post_status' => 'publish',
+                'fields'      => 'ids',
+                'post_type'   => $postTypes
             )
         );
 
         if ( $all_posts ) {
-            foreach($all_posts as $post){
-                $post_id = $post->ID;
+            foreach($all_posts as $post_id){
                 if( isset($_POST['tmaupd_ind_post_' . $post_id]) ){
                     $aupd_post_filter_mode_ind_posts[] = $post_id;
                 }
@@ -512,7 +512,7 @@ function tmaupd_runner_action(){
             }
         }
     }
-    
+
     // if plugin is running in manual mode
     if ($aupd_plugin_mode_radio == 'manual_mode' && $aupd_post_filter_mode_status != 'checked'){
         $postsQuery = new WP_Query($args);
